@@ -1,0 +1,2804 @@
+{
+  "HostSha256": "FF020BE723CC83E3D5FA135B6649F0E21F2D0512873B7A1ACC20DBEC28A30B46",
+  "Routes": [
+    {
+      "Transport": "Channel",
+      "Direction": "ClientToServer",
+      "Class": 0,
+      "Opcode": 9,
+      "Handlers": [
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Channel",
+      "Direction": "ClientToServer",
+      "Class": 0,
+      "Opcode": 11,
+      "Handlers": [
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Channel",
+      "Direction": "ClientToServer",
+      "Class": 0,
+      "Opcode": 17,
+      "Handlers": [
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 3,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 4,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSpecialRewardsModule\u002BHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 5,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 7,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 8,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 12,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalOculusModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 13,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 15,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSpecialRewardsModule\u002BHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 16,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSpecialRewardsModule\u002BHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 18,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 19,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalSpecialAssetsModule\u002BMoveHandler",
+        "Serve100.Host.LocalAssetsModule\u002BMoveHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 20,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAssetsModule\u002BSortHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 21,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 22,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 23,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalAutomaticRepairModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 26,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 27,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalLotteryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 28,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalSkillsModule\u002BSkillHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 29,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalSkillsModule\u002BSkillHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 30,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalExperienceItemModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 31,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestsModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 32,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestsModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 33,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestQuestionModule\u002BHandler",
+        "Serve100.Host.LocalQuestsModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 34,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestsModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 35,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRevivalModule\u002BRecoveryHandler",
+        "Serve100.Host.LocalQuestsModule\u002BArrivalProjection",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 36,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestsModule\u002BArrivalProjection",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 37,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSpecialRewardsModule\u002BHandler",
+        "Serve100.Host.LocalDungeonCombatModule\u002BLoadProjection",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 38,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRevivalModule\u002BCombatReportHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 39,
+      "Handlers": [
+        "Serve100.Host.LocalTutorialModule\u002BHandler",
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonCombatModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 40,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRevivalModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 41,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRevivalModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 42,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRevivalModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 43,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonDropsModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 44,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalExperienceItemModule\u002BHandler",
+        "Serve100.Host.LocalDisguiseModule\u002BHandler",
+        "Serve100.Host.LocalPotionModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 45,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 46,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSettlementModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 47,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRevivalModule\u002BCombatReportHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 48,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEquipmentDurabilityModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 50,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalArcadeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 52,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalArcadeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 63,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 64,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 69,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSettlementModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 70,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSettlementModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 71,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSpecialRewardsModule\u002BHandler",
+        "Serve100.Host.LocalDungeonSettlementModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 72,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSpecialRewardsModule\u002BHandler",
+        "Serve100.Host.LocalDungeonSettlementModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 80,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEquipmentCraftModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 81,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQualityBoxModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 94,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalPlayerMailModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 95,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 96,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 99,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAvatarCompoundModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 100,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalPetRenameModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 102,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalPetHatchModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 117,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSettlementModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 120,
+      "Handlers": [
+        "Serve100.Host.LocalTutorialModule\u002BHandler",
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSpecialRewardsModule\u002BHandler",
+        "Serve100.Host.LocalUniqueAvatarModule\u002BGaugeHandler",
+        "Serve100.Host.LocalGoldExpansionModule\u002BStateHandler",
+        "Serve100.Host.LocalClassChangeModule\u002BStateHandler",
+        "Serve100.Host.LocalSkillsModule\u002BInitializationHandler",
+        "Serve100.Host.LocalQuestsModule\u002BProjection",
+        "Serve100.Host.LocalSpecialAssetsModule\u002BProjectionHandler",
+        "Serve100.Host.LocalAssetsModule\u002BProjectionHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 132,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRevivalModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 134,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 135,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCharacterRenameModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 143,
+      "Handlers": [
+        "Serve100.Host.LocalTutorialModule\u002BHandler",
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSpecialRewardsModule\u002BHandler",
+        "Serve100.Host.LocalUniqueAvatarModule\u002BGaugeHandler",
+        "Serve100.Host.LocalGoldExpansionModule\u002BStateHandler",
+        "Serve100.Host.LocalClassChangeModule\u002BStateHandler",
+        "Serve100.Host.LocalSkillsModule\u002BInitializationHandler",
+        "Serve100.Host.LocalQuestsModule\u002BProjection",
+        "Serve100.Host.LocalSpecialAssetsModule\u002BProjectionHandler",
+        "Serve100.Host.LocalAssetsModule\u002BProjectionHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 160,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateBoxModule\u002BHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 176,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalGmModule\u002BSerializedHandler",
+        "Serve100.Host.LocalGmModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 191,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 194,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalVideoCommunicationModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 195,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 197,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 198,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 201,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEmblemModule\u002BAvatarHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 202,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAvatarDisassemblyModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 205,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEquipmentCraftModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 206,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAvatarDrillModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 211,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDisguiseModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 212,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDisguiseModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 217,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 237,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalTeleportModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 256,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEmblemCompoundModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 260,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalSkillsModule\u002BSkillHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 272,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEquipmentCraftModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 305,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 306,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 307,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 308,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 315,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalPlayerMailModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 324,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalPlayerMailModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 331,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalSkillsModule\u002BCommandSaveHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 393,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 400,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalContainerCouponModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 410,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalLevelTicketModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 422,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalContainerCouponModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 430,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEquipmentCraftModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 439,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalSkillsModule\u002BCommandLocksHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 449,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalTournamentModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 450,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalTournamentModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 451,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAvatarAbilityChangeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 467,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalVideoCommunicationModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 483,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalSkillsModule\u002BSkillHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 490,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAvatarDyeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 494,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalClassChangeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 501,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCharacterRenameModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 507,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalAuraSkinModule\u002BPetUseHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAvatarConversionModule\u002BHandler",
+        "Serve100.Host.LocalFatigueItemModule\u002BHandler",
+        "Serve100.Host.LocalLevel100CapsuleModule\u002BHandler",
+        "Serve100.Host.LocalQuestTicketModule\u002BHandler",
+        "Serve100.Host.LocalCommunicatorModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 510,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalCommerceModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 527,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BSelectionHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 623,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestsModule\u002BArrivalProjection",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 679,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 681,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 692,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 707,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalFateExchangeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 777,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalClassChangeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 857,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAuraSkinModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 897,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalHpMpModule\u002BHandler",
+        "Serve100.Host.LocalSevenBuffModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 907,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEmblemModule\u002BEquipmentHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 908,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEmblemModule\u002BSocketHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 972,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalGoldExpansionModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1113,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAbsoluteAvatarModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1122,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRandomBoxModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1261,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestsModule\u002BManualHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1279,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalArcadeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1418,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestsModule\u002BArrivalProjection",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1421,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BRegistrationHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1422,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestTicketModule\u002BHandler",
+        "Serve100.Host.LocalQuestsModule\u002BPastHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1449,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQuestsModule\u002BPastHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1645,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalDungeonSettlementModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1701,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAbaddonModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1702,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAbaddonModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1703,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalAbaddonModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1715,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalAncientHeroLuckyBoxModule\u002BGaugeProjectionHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEntryModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1719,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRubyTreasureModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1733,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQualityBoxModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1734,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalEquipmentCraftModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1735,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalOculusModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1736,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalOculusModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1767,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1768,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1772,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1786,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalUniqueAvatarActionModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1787,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalUniqueAvatarModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1826,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalQualityBoxModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1829,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalAncientHeroLuckyBoxModule\u002BOpenHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1830,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalAncientHeroLuckyBoxModule\u002BFinishHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1875,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalRubyTreasureModule\u002BCompoundHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1880,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler",
+        "Serve100.Host.LocalBuffRegistrationModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCrystalContractModule\u002BProjectionHandler",
+        "Serve100.Host.LocalCharacterServiceModule\u002BHandler",
+        "Serve100.Host.LocalBattlePassModule\u002BHandler",
+        "Serve100.Host.LocalPremiumModule\u002BHandler",
+        "Serve100.Host.LocalRevivalModule\u002BSerializedHandler",
+        "Serve100.Host.LocalClassChangeModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1894,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1895,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1896,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1918,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1919,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1929,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler"
+      ]
+    },
+    {
+      "Transport": "Game",
+      "Direction": "ClientToServer",
+      "Class": 1,
+      "Opcode": 1930,
+      "Handlers": [
+        "Serve100.Host.LocalInventoryAcquisitionModule\u002BHandler",
+        "Serve100.Host.LocalPetCareModule\u002BHandler",
+        "Serve100.Host.LocalCommerceModule\u002BCatalogHandler",
+        "Serve100.Host.LocalFateModule\u002BHandler"
+      ]
+    }
+  ]
+}

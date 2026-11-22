@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LegacyOutput Condition="'$(LegacyOutput)' == ''">$(MSBuildThisFileDirectory)../../../../baseline/.work/source/Server/artifacts/bin/Serve100.Host/release</LegacyOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Reference Include="Serve100.Game" HintPath="$(LegacyOutput)/Serve100.Game.dll" />
+    <Reference Include="Serve100.Protocol" HintPath="$(LegacyOutput)/Serve100.Protocol.dll" />
+    <Reference Include="Serve100.Infrastructure" HintPath="$(LegacyOutput)/Serve100.Infrastructure.dll" />
+    <Reference Include="Serve100.Host" HintPath="$(LegacyOutput)/Serve100.Host.dll" />
+  </ItemGroup>
+</Project>

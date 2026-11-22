@@ -1,0 +1,45 @@
+﻿param([Parameter(Mandatory)][string]$ProtocolAssembly)
+$ErrorActionPreference = 'Stop'
+[void][Reflection.Assembly]::LoadFrom((Resolve-Path -LiteralPath $ProtocolAssembly).Path)
+
+$core = [byte[]]::new(119)
+$core[10]=3; $core[13]=2; $core[19]=1; $core[20]=7; $core[87]=4; $core[100]=90
+$worn = [Serve100.Protocol.LocalBagItemView]::new(12,0x11223344,0x01234567,45,$core,$true,3,4,1,7,2)
+$stackCore = [byte[]]::new(119)
+$stackCore[102]=143
+$stack = [Serve100.Protocol.LocalBagItemView]::new(40,18012,13,0,$stackCore,$false,0,0,0,0,0)
+$personal = [Serve100.Protocol.LocalBagItemView]::new(5,18012,17,0,$stackCore,$false,0,0,0,0,0)
+$shared = [Serve100.Protocol.LocalBagItemView]::new(9,18012,27,0,$stackCore,$false,0,0,0,0,0)
+$supplies = [Serve100.Protocol.LocalBagItemView]::new(216,18015,8,0,$stackCore,$false,0,0,0,0,0)
+$common = [Serve100.Protocol.LocalBagItemView]::new(49,18016,3,0,$stackCore,$false,0,0,0,0,0)
+$medal = [Serve100.Protocol.LocalBagItemView]::new(55,18017,8192,45,$core,$true,3,4,1,7,2)
+$ev = [Serve100.Protocol.LocalBagItemView]::new(3,18018,1,0,$stackCore,$false,0,0,0,0,0)
+$core153 = [byte[]]::new(153)
+$core153[100]=215
+$a = [Serve100.Protocol.LocalAvatarWireDetail]::new([byte[]](65,128),[byte[]](3),[uint32]4294967295)
+$avatar = [Serve100.Protocol.LocalSpecialItemView]::new(4,38001,400,33,$core153,$a,$null,2,1,3,266,2)
+$artifact = [Serve100.Protocol.LocalSpecialItemView]::new(27,38003,452,22,$core153,$null,$null,1,0,0,0,0)
+$petDetail = [Serve100.Protocol.LocalCreatureView]::new(38002,0x1234,'小熊',5,33,71,1,2,3,1,$false,[byte[]]::new(119),-1)
+$pet = [Serve100.Protocol.LocalSpecialItemView]::new(26,38002,0,0,$core153,$null,$petDetail,0,0,0,0,0)
+$rows = [System.Collections.Generic.List[object]]::new()
+function Record([string]$Key,[int]$Opcode,[byte[]]$Body) {
+    $rows.Add([ordered]@{key=$Key; opcode=$Opcode; body=[Convert]::ToBase64String($Body)})
+}
+Record bag 13 ([Serve100.Protocol.LocalAssetsPackets]::OrdinaryBag([uint32]2147483651,123,[Serve100.Protocol.LocalBagItemView[]]@($stack),8))
+Record worn 14 ([Serve100.Protocol.LocalAssetsPackets]::OrdinaryWornSet([Serve100.Protocol.LocalBagItemView[]]@($worn),$false))
+Record wallet 53 ([Serve100.Protocol.LocalEntryPackets]::AccountWallet(51))
+Record petBag 13 ([Serve100.Protocol.LocalSpecialAssetsPackets]::PetBag([Serve100.Protocol.LocalSpecialItemView[]]@(),[Serve100.Protocol.LocalBagItemView[]]@($supplies)))
+Record personal 13 ([Serve100.Protocol.LocalAssetsPackets]::Cargo(2,152,[Serve100.Protocol.LocalBagItemView[]]@($personal),0))
+Record account 13 ([Serve100.Protocol.LocalAssetsPackets]::Cargo(12,16,[Serve100.Protocol.LocalBagItemView[]]@($shared),4321))
+Record common 13 ([Serve100.Protocol.LocalCommonInventoryPackets]::Full45([Serve100.Protocol.LocalBagItemView[]]@($common)))
+Record medal 13 ([Serve100.Protocol.LocalMedalPackets]::Inventory([Serve100.Protocol.LocalBagItemView[]]@($medal)))
+Record avatarBag 13 ([Serve100.Protocol.LocalSpecialAssetsPackets]::AvatarBag([Serve100.Protocol.LocalSpecialItemView[]]@($avatar),8))
+Record creatures 105 ([Serve100.Protocol.LocalSpecialAssetsPackets]::Creatures([Serve100.Protocol.LocalCreatureView[]]@($petDetail)))
+Record artifact 14 ([Serve100.Protocol.LocalSpecialAssetsPackets]::ArtifactWorn([Serve100.Protocol.LocalSpecialItemView[]]@($artifact)))
+Record pet 14 ([Serve100.Protocol.LocalSpecialAssetsPackets]::PetWorn($pet,$null,$true))
+Record avatarWorn 14 ([Serve100.Protocol.LocalSpecialAssetsPackets]::AvatarWorn([Serve100.Protocol.LocalSpecialItemView[]]@()))
+$collection = [byte[][]]::new(1)
+$collection[0]=[Serve100.Protocol.LocalAssetsPackets]::ItemRow($ev)
+Record collection 13 ([Serve100.Protocol.LocalFatePackets]::Collection44($collection))
+$output = [ordered]@{origin='Original Serve100.Protocol assembly with deterministic synthetic saved rows'; assemblySha256=(Get-FileHash -LiteralPath $ProtocolAssembly).Hash; rows=$rows}
+$output | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8NoBOM -LiteralPath (Join-Path $PSScriptRoot 'nonempty.json')

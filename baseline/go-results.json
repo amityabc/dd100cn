@@ -1,0 +1,198 @@
+{
+  "scope": "Current partial Go game Host, project PostgreSQL 17.11, matched PVF, Windows loopback",
+  "build": {
+    "command": "go build -o serve100.exe ./cmd/serve100",
+    "go": "go version go1.27.4 windows/amd64",
+    "coldCompilerCacheSeconds": 22.281,
+    "noChangeSeconds": 0.925,
+    "oneGameplayChangeSeconds": 2.165
+  },
+  "entry": {
+    "checkedGameExchanges": [
+      "roster",
+      "emptyRosterProbe",
+      "ping",
+      "availableName",
+      "oneCharacterName",
+      "absentSelectIndex"
+    ],
+    "loginOrder": [
+      "N1",
+      "ACK1"
+    ],
+    "loopbackRttMs": {
+      "emptyRoster": {
+        "samples": 100,
+        "p50Ms": 1.098,
+        "p95Ms": 2.569,
+        "p99Ms": 2.8
+      },
+      "emptyRosterProbe": {
+        "samples": 100,
+        "p50Ms": 0.34,
+        "p95Ms": 0.421,
+        "p99Ms": 0.481
+      },
+      "tickEcho": {
+        "samples": 100,
+        "p50Ms": 0.33,
+        "p95Ms": 0.402,
+        "p99Ms": 0.491
+      }
+    },
+    "samplesPerOperation": 100,
+    "warmupsPerOperation": 1
+  },
+  "movement": {
+    "moveThenPingBarrierMs": {
+      "samples": 100,
+      "p50Ms": 2.974,
+      "p95Ms": 4.427,
+      "p99Ms": 4.607
+    },
+    "verifiedDatabaseRevisions": 101,
+    "warmupMoves": 1
+  },
+  "town": {
+    "actions": {
+      "opening/list": 1,
+      "opening/create": 2,
+      "opening/select": 3,
+      "opening/loadOpening": 44,
+      "opening/bootstrapOpening": 1,
+      "opening/sceneControl": 1,
+      "opening/loaded": 7,
+      "opening/loadedAgain": 1,
+      "opening/sceneFlip": 1,
+      "opening/unsupportedSceneControl": 0,
+      "opening/blockedMove": 1,
+      "town/list": 1,
+      "town/select": 3,
+      "town/completeTutorialC143": 4,
+      "town/loadTown": 39,
+      "town/readyTown": 4,
+      "town/move": 1,
+      "travel/list": 1,
+      "travel/selectRoom": 3,
+      "travel/loadRoom": 39,
+      "travel/readyRoom": 4,
+      "travel/createSoloParty": 3,
+      "travel/repeatSoloParty": 3,
+      "travel/differentActiveParty": 3,
+      "travel/badLeave": 3,
+      "travel/leaveSoloParty": 3,
+      "travel/leaveAgain": 2,
+      "travel/customSoloParty": 3,
+      "travel/leaveCustomParty": 3,
+      "travel/roomExit": 4,
+      "travel/walkAfterExit": 0,
+      "travel/roomExitReplay": 3,
+      "travel/roadToRoom": 2,
+      "travel/roadReplay": 2,
+      "travel/roadBadOrigin": 1,
+      "travel/roomExitToSaved": 3,
+      "travel/roadToGate": 2,
+      "travel/badSeriaWarp": 1,
+      "travel/returnToList": 2
+    },
+    "originalResponseFrames": 204,
+    "databaseChecked": true
+  },
+  "combat": {
+    "actions": {
+      "combat/list": 1,
+      "combat/create": 2,
+      "combat/select": 3,
+      "combat/loadOpening": 44,
+      "combat/bootstrapOpening": 1,
+      "combat/sceneControl": 1,
+      "combat/loaded": 7,
+      "combat/loadedAgain": 1,
+      "combat/sceneFlip": 1,
+      "combat/unsupportedSceneControl": 0,
+      "combat/blockedMove": 1,
+      "combat/death402": 2,
+      "combat/repeatDeath402": 1,
+      "combat/death403": 2,
+      "combat/death404": 2,
+      "combat/move1": 3,
+      "combat/load1": 7,
+      "combat/death405": 2,
+      "combat/death406": 2,
+      "combat/death407": 2,
+      "combat/move2": 3,
+      "combat/load2": 7,
+      "combat/death408": 2,
+      "combat/death409": 2,
+      "combat/death410": 2,
+      "combat/death411": 2,
+      "combat/death412": 2,
+      "combat/move3": 3,
+      "combat/load3": 7,
+      "combat/death413": 2,
+      "combat/death414": 2,
+      "combat/death415": 2,
+      "combat/death416": 2,
+      "combat/death417": 5
+    },
+    "originalResponseFrames": 128,
+    "databaseChecked": true,
+    "verifiedDeathReceipts": 16
+  },
+  "repeat": {
+    "scope": "Independent repeat after porting town transitions and account-wide inventory preparation. Same loopback driver, isolated PostgreSQL, 1 warmup and 100 requests.",
+    "build": {
+      "command": "go build -o serve100.exe ./cmd/serve100",
+      "go": "go version go1.27.4 windows/amd64",
+      "coldCompilerCacheSeconds": 19.21,
+      "noChangeSeconds": 0.885,
+      "oneGameplayChangeSeconds": 1.757
+    },
+    "entry": {
+      "checkedGameExchanges": [
+        "roster",
+        "emptyRosterProbe",
+        "ping",
+        "availableName",
+        "oneCharacterName",
+        "absentSelectIndex"
+      ],
+      "loginOrder": [
+        "N1",
+        "ACK1"
+      ],
+      "loopbackRttMs": {
+        "emptyRoster": {
+          "samples": 100,
+          "p50Ms": 0.796,
+          "p95Ms": 1.21,
+          "p99Ms": 1.429
+        },
+        "emptyRosterProbe": {
+          "samples": 100,
+          "p50Ms": 0.253,
+          "p95Ms": 0.339,
+          "p99Ms": 0.385
+        },
+        "tickEcho": {
+          "samples": 100,
+          "p50Ms": 0.246,
+          "p95Ms": 0.385,
+          "p99Ms": 0.445
+        }
+      },
+      "samplesPerOperation": 100,
+      "warmupsPerOperation": 1
+    },
+    "movement": {
+      "moveThenPingBarrierMs": {
+        "samples": 100,
+        "p50Ms": 1.625,
+        "p95Ms": 1.972,
+        "p99Ms": 2.175
+      },
+      "verifiedDatabaseRevisions": 101,
+      "warmupMoves": 1
+    }
+  }
+}

@@ -1,0 +1,8 @@
+/.work/
+/.tools/
+/bin/
+/runtime/
+*.exe
+*.test
+*.prof
+*.local.json

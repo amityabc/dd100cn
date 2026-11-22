@@ -1,0 +1,156 @@
+{
+  "source": "S9A1 isolated Release host, original protocol and real client resources",
+  "measuredUtcDate": "2026-11-22",
+  "machine": {
+    "windows": "10.0.26200",
+    "logicalProcessors": 32
+  },
+  "build": {
+    "sdkVersion": "10.0.404",
+    "officialFullSeconds": 77.175,
+    "officialNoChangeSeconds": 6.242,
+    "devInitialHostSeconds": 21.522,
+    "devNoChangeSeconds": 2.947,
+    "devOneGameSourceSeconds": 6.416,
+    "sourceDigest": "B5A2DF5B64653CBE865B0732A6B0FBD16228F9B3FDCA2E1F98EE5EB14C830C26",
+    "isolatedSourceTree": "2eefdd38a2e30cc578ec9455f1ba74f2731b8ce6"
+  },
+  "startup": {
+    "cold": {
+      "freshProcessToReadySeconds": 70.354,
+      "slowestReportedPhases": [
+        {
+          "phase": "QualityAndMail",
+          "ms": 24837.42
+        },
+        {
+          "phase": "DungeonDrops",
+          "ms": 18567.68
+        },
+        {
+          "phase": "FreeCardRewards",
+          "ms": 4829.1
+        },
+        {
+          "phase": "GiftBoxesAndContracts",
+          "ms": 3035.48
+        }
+      ],
+      "preparationCache": {
+        "Entries": 481527,
+        "Bytes": 197920853,
+        "Hits": 193173,
+        "Misses": 481540
+      }
+    },
+    "warm": {
+      "freshProcessToReadySeconds": 13.732,
+      "slowestReportedPhases": [
+        {
+          "phase": "ServiceConstruction",
+          "ms": 3122.78
+        },
+        {
+          "phase": "DungeonDrops",
+          "ms": 2085.34
+        },
+        {
+          "phase": "DungeonDefinitions",
+          "ms": 1204.1
+        },
+        {
+          "phase": "GiftBoxesAndContracts",
+          "ms": 967.56
+        }
+      ],
+      "preparationCache": {
+        "Entries": 481527,
+        "Bytes": 197920853,
+        "Hits": 274419,
+        "Misses": 13
+      }
+    }
+  },
+  "loopbackRttMs": {
+    "cold": {
+      "emptyRoster": {
+        "samples": 100,
+        "p50Ms": 14.907,
+        "p95Ms": 18.412,
+        "p99Ms": 19.865
+      },
+      "emptyRosterProbe": {
+        "samples": 100,
+        "p50Ms": 9.146,
+        "p95Ms": 12.544,
+        "p99Ms": 13.944
+      },
+      "tickEcho": {
+        "samples": 100,
+        "p50Ms": 8.65,
+        "p95Ms": 11.239,
+        "p99Ms": 13.098
+      }
+    },
+    "warm": {
+      "emptyRoster": {
+        "samples": 100,
+        "p50Ms": 12.818,
+        "p95Ms": 15.435,
+        "p99Ms": 16.655
+      },
+      "emptyRosterProbe": {
+        "samples": 100,
+        "p50Ms": 8.223,
+        "p95Ms": 10.078,
+        "p99Ms": 12.203
+      },
+      "tickEcho": {
+        "samples": 100,
+        "p50Ms": 7.386,
+        "p95Ms": 9.102,
+        "p99Ms": 10.064
+      }
+    }
+  },
+  "town": {
+    "rosterSelectToTownReadyBarrierMs": 297.024,
+    "usedNativeOpeningSkip": false,
+    "moveThenPingBarrierMs": {
+      "samples": 100,
+      "p50Ms": 23.083,
+      "p95Ms": 25.51,
+      "p99Ms": 26.59
+    },
+    "warmupMoves": 1,
+    "verifiedDatabaseRevisions": 101
+  },
+  "character": {
+    "id": 1,
+    "name": "基线角色",
+    "createAckBodyHex": "01010008000000bbf9cfdfbdc7c9ab",
+    "snapshot": "v35-character.sqlite3"
+  },
+  "resources": {
+    "DNF.exe": {
+      "bytes": 97925648,
+      "sha256": "c1b772acb7c4c5086a4ad64da619dea3547b73bfd2d06db93a24367186dd0e8b"
+    },
+    "Script.pvf": {
+      "bytes": 302457508,
+      "sha256": "6d3791116a6242c4bddb39726650be77ac95ee19ea7679fe7fbe28b1240cc60f"
+    },
+    "channel_info.etc": {
+      "bytes": 5097,
+      "sha256": "9396598201be4fd8479e16432cbf136a2529b5da2785abe6b3bf6d3359722793"
+    },
+    "Client100Profile.json": {
+      "bytes": 1023,
+      "sha256": "df01e9a78304c92f9f00a6b8c596f3ebadd4f5c5b20d2051a6a5ec019b25305a"
+    },
+    "sk.dat": {
+      "bytes": 1024,
+      "sha256": "f7158a3c2081af042cb6766be47e1005618653f9e2cb4381f0f103bace163640"
+    }
+  }
+}
