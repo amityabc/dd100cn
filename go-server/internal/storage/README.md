@@ -36,13 +36,12 @@
 
 stage 和 activate 通过环境变量 `S9A1_DATABASE_URL` 指定目标数据库。inspect 仅输出报告。stage 在 `s9a1_import` 保存整份建表定义、表行及每张表的 SHA-256，区分 NULL、整数、浮点、TEXT 和 BLOB，PostgreSQL 读回核验通过才提交。activate 单独开启事务，校验原名、原 ID 和目标账号，写入可供游戏读取的数据。观察 `Staged`、`Activated` 和 `ActivationIssues` 可以区分两阶段结果。同一份快照和同一目标重复执行可安全重试。既有账号或与其他玩家冲突的名字、ID、资产 UID 会使激活回滚。
 
-local-entry v35 直接走激活校验。local-entry v1～v34，含旧服可识别的无版本标记 v1～v3，先以原摘要完成暂存，再经 SQLite backup API 写入 `.work/legacy-import` 内的一次性副本。副本摘要与原快照一致后，导入器调用旧服 35 步迁移链并重读副本。报告的 `SHA256` 与 `ModuleVersion` 始终指原快照，`ActivationSHA256` 与 `ActivationVersion` 记录此次升级副本。激活成功时写回原摘要的暂存记录。源库、原 WAL 和暂存数据可用于重试或审计，临时副本随导入退出清理。
+local-entry v35 直接走激活校验。local-entry v1～v34，含旧服可识别的无版本标记 v1～v3，先以原摘要暂存，再经 SQLite backup API 写入 `.work/legacy-import` 内的一次性副本。Go 导入器核对副本摘要、旧版表结构和约束，按旧版序列升级武器、宠物、仓库、勋章、洞察绑定和收据。报告的 `SHA256` 与 `ModuleVersion` 指原快照，`ActivationSHA256` 与 `ActivationVersion` 指升级副本。激活成功后写回原摘要的暂存记录。临时副本随导入退出清理。[升级入口](legacy/upgrade_native.go) · [历史版本定义](legacy/schemas/published.json)
 
-启用旧版升级时，先用配套旧 C# Release 程序集构建离线助手。若已设置 `S9A1_DOTNET` 可省略 `-Dotnet` 和 `-dotnet`。`-LegacyOutput` 可选择项目里已有的匹配 Release 目录。`inspect`、`stage`、v35 激活及运行中的 Go 游戏服务均不需要该助手。
+源码构建和发布包内的 `import-save` 均自带旧档升级逻辑。用 `-account` 指定要接收该存档的 PostgreSQL 账号。
 
 ```powershell
-.\tools\build-save-upgrade.ps1 -Dotnet $sdk
-.\bin\import-save.exe -mode activate -source $oldSave -account $account -dotnet $sdk
+.\bin\import-save.exe -mode activate -source $oldSave -account $account
 ```
 
 保存损坏、校验失败或包含未接入的专用状态时，报告列出阻断原因并保留暂存。删除过的角色仍占用原序列曾用 ID。多份旧库出现相同角色 ID 时，激活保留原 ID 的前提是另库中尚未占用该 ID。
@@ -62,7 +61,7 @@ python -B tools/postgres/save_archive.py restore --dsn-file $dsnFile --archive .
 
 ## 验证
 
-旧版升级的离线用例用真实 v3 结构造出仍带 WAL 的武器存档，核对备份读取同一快照、升级保留角色 ID 与冻结的 119 字节武器核心、已删除角色的序列上界和钱包，并回读原快照确认源仍是 v3。v34 用例另核对升级保留金币和含最大 uint64 数值的历史收据。构建助手后可运行 `$env:S9A1_DOTNET = $sdk` 和 `.\tools\go.ps1 test -count=1 -run TestLegacy ./internal/storage/legacy`，无需 PostgreSQL。
+旧档离线检查覆盖带 WAL 的 v3 武器、已删除角色的序列上界、v34 的金币和含最大 uint64 的历史收据，以及洞察 v14/v23、水晶 v26/v27 四种历史分支。运行 `.\tools\go.ps1 test -count=1 -run TestLegacy ./internal/storage/legacy`。开发时可用 `.\tools\build-save-upgrade.ps1 -Dotnet $sdk` 构建旧服参考助手，再设置 `$env:S9A1_DOTNET = $sdk` 重跑相同用例。两套实现将分别升级同一份快照，逐表核对行数和内容摘要。手动选用参考实现时显式传入 `-upgrader` 和 `-dotnet`。
 
 `tools/postgres/Test-Instance.ps1` 用已有的 PostgreSQL 二进制建立只监听回环的隔离实例。当前数据库用 PostgreSQL 17.11 验证，普通交换使用 PostgreSQL 15 引入的 NULLS NOT DISTINCT 约束。通过 `S9A1_PG_BIN` 或 `-BinDirectory` 指定其 bin 目录，数据、日志和本机连接文件均在项目根的 `.work/postgres-storage`。从 go-server 目录运行下列命令。
 

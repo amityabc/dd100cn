@@ -91,20 +91,26 @@ func oculusDungeon(mode uint16) uint32 {
 }
 
 func readOculusLedger(ctx context.Context, tx *sql.Tx, c Character, now time.Time) (OculusCounts, int64, int64, error) {
-	day, week := OculusPeriods(now)
-	z := OculusCounts{Day: day, Week: week}
 	rows, err := tx.QueryContext(ctx, `SELECT event_key,payload::text FROM s9a1.reward_receipts WHERE character_id=$1 AND
 		(event_key LIKE 'oculus-entry:run:%' OR event_key LIKE 'oculus-entry:end:%' OR event_key LIKE 'oculus-entry:credit:%')
 		ORDER BY (payload->>'Revision')::bigint`, c.ID)
 	if err != nil {
-		return z, 0, 0, err
+		return OculusCounts{}, 0, 0, err
 	}
+	return OculusReceiptCounts(rows, c, now)
+}
+
+// OculusReceiptCounts consumes (receipt key, JSON) rows in revision order. Both
+// the online ledger and the offline SQLite importer use the same admission checks.
+func OculusReceiptCounts(rows *sql.Rows, c Character, now time.Time) (OculusCounts, int64, int64, error) {
+	day, week := OculusPeriods(now)
+	z := OculusCounts{Day: day, Week: week}
 	defer rows.Close()
 	ledger := map[string]*oculusAllowance{}
 	var revision int64
 	for rows.Next() {
 		var key, raw string
-		if err = rows.Scan(&key, &raw); err != nil {
+		if err := rows.Scan(&key, &raw); err != nil {
 			return z, 0, 0, err
 		}
 		var r deathReceipt
@@ -160,7 +166,7 @@ func readOculusLedger(ctx context.Context, tx *sql.Tx, c Character, now time.Tim
 		}
 		z.Day, z.Week = max(z.Day, release.Day), max(z.Week, release.Week)
 	}
-	if err = rows.Err(); err != nil {
+	if err := rows.Err(); err != nil {
 		return z, 0, 0, err
 	}
 	var dt, wt int64

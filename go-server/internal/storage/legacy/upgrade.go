@@ -57,7 +57,7 @@ func (s *source) copySnapshot(ctx context.Context, path string) error {
 
 func (s *source) upgrade(ctx context.Context, opts UpgradeOptions) (_ *source, _ func(), retErr error) {
 	if opts.ProjectDir == "" {
-		return nil, nil, errors.New("v1–v34 activation needs the offline upgrader built with tools/build-save-upgrade.ps1")
+		return nil, nil, errors.New("v1–v34 activation needs a project directory for a private SQLite snapshot")
 	}
 	project, err := filepath.EvalSymlinks(opts.ProjectDir)
 	if err != nil {
@@ -88,7 +88,12 @@ func (s *source) upgrade(ctx context.Context, opts UpgradeOptions) (_ *source, _
 	if copied.SHA256 != s.report.SHA256 || copied.ModuleVersion != s.report.ModuleVersion {
 		return nil, nil, errors.New("private SQLite backup differs from the staged snapshot")
 	}
-	if err = runUpgrade(ctx, opts, project, dir, copyPath); err != nil {
+	if opts.Assembly != "" {
+		err = runUpgrade(ctx, opts, project, dir, copyPath)
+	} else {
+		err = upgradeNative(ctx, copyPath, s.report)
+	}
+	if err != nil {
 		return nil, nil, err
 	}
 	install, err := openSource(ctx, copyPath)

@@ -1,5 +1,11 @@
 using Serve100.Infrastructure.Storage;
 
+if (args is ["--schemas",var schemaOutput])
+{
+    ReferenceSchemas.Write(schemaOutput);
+    return 0;
+}
+
 if (args.Length != 1 || !File.Exists(args[0]))
 {
     Console.Error.WriteLine("Expected one existing private SQLite snapshot.");

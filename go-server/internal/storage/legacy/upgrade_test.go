@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"encoding/binary"
 	"encoding/json"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
@@ -72,14 +74,6 @@ func TestLegacySnapshotBackupSharesPinnedWALView(t *testing.T) {
 
 func TestLegacyOfflineUpgradePreservesWornWeaponAndDeletedIdentity(t *testing.T) {
 	project, path, writer := historicalFixture(t)
-	dotnet := os.Getenv("S9A1_DOTNET")
-	if dotnet == "" {
-		t.Skip("set S9A1_DOTNET and build tools/build-save-upgrade.ps1 for the offline C# fixture")
-	}
-	assembly := filepath.Join(project, ".work", "save-upgrade-build", "bin", "LegacyUpgrade", "release", "LegacyUpgrade.dll")
-	if _, err := os.Stat(assembly); err != nil {
-		t.Fatal(err)
-	}
 	if _, err := writer.Exec("CREATE TABLE next_schema_metadata(baseline TEXT PRIMARY KEY,version INTEGER NOT NULL CHECK(version>=1)); " +
 		"CREATE TABLE next_schema_modules(module TEXT PRIMARY KEY,version INTEGER NOT NULL CHECK(version>=1));" +
 		"INSERT INTO next_schema_metadata VALUES('serve100-next',1); INSERT INTO next_schema_modules VALUES('local-entry',3); PRAGMA user_version=1"); err != nil {
@@ -92,11 +86,12 @@ func TestLegacyOfflineUpgradePreservesWornWeaponAndDeletedIdentity(t *testing.T)
 	}
 	t.Cleanup(s.close)
 	oldDigest := s.report.SHA256
-	install, cleanup, err := s.upgrade(ctx, UpgradeOptions{ProjectDir: project, Dotnet: dotnet})
+	install, cleanup, err := s.upgrade(ctx, UpgradeOptions{ProjectDir: project})
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(cleanup)
+	matchReference(t, project, s, install)
 	if install.report.ModuleVersion != 35 || install.report.SHA256 == oldDigest || install.report.Characters != 1 ||
 		len(install.report.ActivationIssues) != 0 {
 		t.Fatalf("upgraded snapshot: %+v", install.report)
@@ -161,11 +156,12 @@ func TestLegacyOfflineUpgradePreservesWornWeaponAndDeletedIdentity(t *testing.T)
 		if latest.report.ModuleVersion != 34 || latest.report.Gold != 917 {
 			t.Fatalf("source v34: %+v", latest.report)
 		}
-		upgraded, cleanup, err := latest.upgrade(ctx, UpgradeOptions{ProjectDir: project, Dotnet: dotnet})
+		upgraded, cleanup, err := latest.upgrade(ctx, UpgradeOptions{ProjectDir: project})
 		if err != nil {
 			t.Fatal(err)
 		}
 		t.Cleanup(cleanup)
+		matchReference(t, project, latest, upgraded)
 		if upgraded.report.Gold != 917 || upgraded.report.ModuleVersion != 35 || len(upgraded.report.ActivationIssues) > 0 {
 			t.Fatalf("upgraded v34: %+v", upgraded.report)
 		}
@@ -177,4 +173,88 @@ func TestLegacyOfflineUpgradePreservesWornWeaponAndDeletedIdentity(t *testing.T)
 			t.Fatalf("upgraded v34 receipt changed: %q", actual)
 		}
 	})
+}
+
+func matchReference(t *testing.T, project string, original, native *source) {
+	t.Helper()
+	sdk := os.Getenv("S9A1_DOTNET")
+	if sdk == "" {
+		return
+	}
+	helper := filepath.Join(project, ".work", "save-upgrade-build", "bin", "LegacyUpgrade", "release", "LegacyUpgrade.dll")
+	ref, closeRef, err := original.upgrade(t.Context(), UpgradeOptions{ProjectDir: project, Dotnet: sdk, Assembly: helper})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer closeRef()
+	if len(native.report.Tables) != len(ref.report.Tables) {
+		t.Fatal("native and reference upgraded table count differs")
+	}
+	for i, table := range ref.report.Tables {
+		actual := native.report.Tables[i]
+		if table.Name != actual.Name || table.SHA256 != actual.SHA256 || table.Rows != actual.Rows {
+			t.Fatalf("native v35 rows differ in %s (Go %s, C# %s)", table.Name, actual.SHA256, table.SHA256)
+		}
+	}
+}
+
+func TestLegacyPublishedBranches(t *testing.T) {
+	var book schemaBook
+	if err := json.Unmarshal(publishedSchemas, &book); err != nil {
+		t.Fatal(err)
+	}
+	project, err := filepath.Abs(filepath.Join("..", "..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for branch, v := range map[string]int{"oculus14": 14, "oculus23": 23, "crystal26": 26, "crystal27": 27} {
+		t.Run(branch, func(t *testing.T) {
+			dir, err := privateUpgradeDir(project)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { _ = os.RemoveAll(dir) })
+			path := filepath.Join(dir, "branch.sqlite3")
+			db, err := sql.Open("sqlite", sqliteURI(path, "mode=rwc"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer db.Close()
+			objects := book.snapshot(v-1, map[string]int{"local-entry": v}, true, branch)
+			for _, kind := range []string{"table", "index", "view", "trigger"} {
+				for _, name := range slices.Sorted(maps.Keys(objects)) {
+					if o := objects[name]; o.Type == kind {
+						if _, err = db.Exec(o.SQL); err != nil {
+							t.Fatal(err)
+						}
+					}
+				}
+			}
+			_, err = db.Exec("PRAGMA user_version=1; INSERT INTO next_schema_metadata VALUES('serve100-next',1); INSERT INTO next_schema_modules VALUES('local-entry',?); INSERT INTO local_entry_accounts(account,phase,cera) VALUES('local',5,73)", v)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// An explicit published unique key can be renamed by an old save tool.
+			if branch == "crystal27" {
+				_, err = db.Exec("DROP INDEX next_item_account_cargo; CREATE UNIQUE INDEX alternate_cargo ON local_item_assets(account,slot) WHERE location=12")
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			s, err := openSource(t.Context(), path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer s.close()
+			n, clean, err := s.upgrade(t.Context(), UpgradeOptions{ProjectDir: project})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer clean()
+			if n.report.ModuleVersion != 35 {
+				t.Fatal(n.report.ModuleVersion)
+			}
+			matchReference(t, project, s, n)
+		})
+	}
 }
