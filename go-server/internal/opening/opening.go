@@ -41,8 +41,39 @@ type Room struct {
 	Monsters           []Monster
 	Companions         []Companion
 	PassiveObjectCodes []uint32
+	NpcTemplates       []uint32
 	MapAliases         []uint32
 	CinematicLayer     *Room
+	CinematicDestroys  []CinematicDestroy
+	ScriptTransfer     *ScriptTransfer
+	StormCleanup       *StormCleanup
+	StormArrival       *StormArrival
+}
+
+type CinematicDestroy struct {
+	Index        byte
+	Movie        uint32
+	TriggerIndex *byte
+	Hash         string
+}
+
+type ScriptTransfer struct {
+	X, Y           byte
+	Map            uint32
+	Hash           string
+	RequiredDeaths []byte
+}
+
+type StormCleanup struct {
+	Index         byte
+	Prerequisites []byte
+	Hash          string
+}
+
+type StormArrival struct {
+	Boss    byte
+	Targets []byte
+	Hash    string
 }
 
 type Dungeon struct {
@@ -170,6 +201,10 @@ type Run struct {
 }
 
 func (r *Run) Ready() bool { return r.ready }
+
+func (r *Run) WearScene() (string, uint16, Room, bool) {
+	return r.runID, r.character, r.room, r.ready
+}
 
 // Start projects entry after the owner has committed fatigue and verified
 // the persisted tutorial identity. firstActor is the start returned by Reserve.

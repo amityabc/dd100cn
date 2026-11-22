@@ -28,7 +28,16 @@ def executable(name, directory):
 @contextmanager
 def connection(args):
     env = os.environ.copy()
-    raw = args.dsn_file.read_text(encoding='utf-8-sig').strip() if args.dsn_file else env.get('S9A1_POSTGRES_DSN')
+    override = (env.get('S9A1_POSTGRES_DSN') or '').strip()
+    if args.server_root:
+        if args.dsn_file:
+            raise ValueError('The server-root mode uses the effective Go service database')
+        root_dsn = args.server_root / 'runtime' / 'postgres-dsn.txt'
+        raw = override or (root_dsn.read_text(encoding='utf-8').strip() if root_dsn.is_file() else '')
+        if not raw:
+            raise ValueError('The Go service has no effective PostgreSQL connection string')
+    else:
+        raw = args.dsn_file.read_text(encoding='utf-8-sig').strip() if args.dsn_file else override
     if not raw:
         # Native libpq environment and named services work without a project URI.
         yield env
@@ -90,6 +99,10 @@ def database_option(name):
 
 
 def run(args):
+    if args.source_id and (not args.server_root or not re.fullmatch(r'[0-9a-fA-F]{64}', args.source_id)):
+        raise ValueError('A valid source fingerprint requires --server-root')
+    if args.server_root and (args.action == 'restore' or not args.source_id):
+        raise ValueError('Server-root backup and verification require the intended source fingerprint')
     directory = args.bin_dir
     names = ('psql', 'pg_dump', 'pg_restore', 'createdb')
     local = project / '.tools/pg17-client/bin'
@@ -122,12 +135,36 @@ def run(args):
                 raise ValueError(f'Unrecognized PostgreSQL version from {tool}')
             return match.group(1)
 
+        dump_options = ('-w', '--format=custom', '--no-owner', '--no-privileges', '--no-tablespaces',
+                        '--schema=s9a1', '--schema=s9a1_import')
+
+        def checked_contents(path):
+            contents = command('pg_restore', '--list', path, read=True)
+            if ' TABLE DATA s9a1 accounts ' not in contents:
+                raise ValueError('Archive is missing the game account table')
+
+        def logical_digest(path):
+            options = ['--no-owner', '--no-privileges', '--no-tablespaces', '--file=-']
+            if '--restrict-key' in command('pg_restore', '--help', read=True):
+                options.append('--restrict-key=Serve100GameSaveComparison')
+            with subprocess.Popen([tools['pg_restore'], *options, str(path)], env=env, stdout=subprocess.PIPE) as process:
+                value = hashlib.file_digest(process.stdout, 'sha256').hexdigest()
+                process.stdout.close()
+                if process.wait():
+                    raise ValueError('Could not read a complete logical archive')
+                return value
+
         version = tool_version('pg_dump')
         major = int(version.split('.')[0])
         endpoint = args.maintenance_db if args.action == 'restore' else None
         remote = int(sql("SHOW server_version_num", endpoint))
         if remote // 10000 != major or any(tool_version(t) != version for t in tools if t != 'pg_dump'):
             raise ValueError('Use matching PostgreSQL client tools from the same server major version')
+        deployment = None
+        if args.server_root:
+            target = json.loads(sql("""SELECT json_build_object('database',current_database(),
+                'host',inet_server_addr(),'port',inet_server_port(),'oid',oid) FROM pg_database WHERE datname=current_database()"""))
+            deployment = {'root': os.path.normcase(str(args.server_root.resolve())), 'source': args.source_id.lower(), 'target': target}
 
         if args.action == 'backup':
             if sql("SELECT to_regclass('s9a1.accounts') IS NOT NULL") != 't':
@@ -136,13 +173,12 @@ def run(args):
             archive_dir.mkdir(mode=0o700)  # Exclusive ownership. An existing backup is never replaced.
             temporary = archive_dir / 'save.dump.partial'
             try:
-                command('pg_dump', '-w', '--format=custom', '--no-owner', '--no-privileges', '--no-tablespaces',
-                        '--schema=s9a1', '--schema=s9a1_import', '--file', temporary)
-                contents = command('pg_restore', '--list', temporary, read=True)
-                if ' TABLE DATA s9a1 accounts ' not in contents:
-                    raise ValueError('Archive is missing the game account table')
+                command('pg_dump', *dump_options, '--file', temporary)
+                checked_contents(temporary)
                 header = {'format': 1, 'postgresVersion': remote, 'clientVersion': version,
                           'database': json.loads(sql(database_settings)), 'sha256': digest(temporary)}
+                if deployment:
+                    header['deployment'] = deployment
                 temporary.rename(dump)
                 with manifest.open('x', encoding='utf-8') as f:
                     json.dump(header, f, indent=2)
@@ -156,9 +192,27 @@ def run(args):
             return
 
         header = json.loads(manifest.read_text(encoding='utf-8'))
-        if header.get('format') != 1 or header['postgresVersion'] // 10000 != major or header['sha256'] != digest(dump):
+        if (not isinstance(header, dict) or header.get('format') != 1 or
+                not isinstance(header.get('postgresVersion'), int) or header['postgresVersion'] // 10000 != major or
+                header.get('sha256') != digest(dump)):
             raise ValueError('Backup version or SHA-256 mismatch')
-        command('pg_restore', '--list', dump, read=True)
+        checked_contents(dump)
+        if args.action == 'verify':
+            if deployment and header.get('deployment') != deployment:
+                raise ValueError('The stopped-data backup identifies another deployed source or database target')
+            if header['clientVersion'] != version or header['database'] != json.loads(sql(database_settings)):
+                raise ValueError('The current PostgreSQL tools or database settings differ from the stopped backup')
+            expected = logical_digest(dump)
+            work = project / '.work/postgres-backup'
+            work.mkdir(parents=True, exist_ok=True)
+            with tempfile.TemporaryDirectory(dir=work) as directory:
+                current = Path(directory) / 'current.dump'
+                command('pg_dump', *dump_options, '--file', current)
+                checked_contents(current)
+                if expected != logical_digest(current) or header['sha256'] != digest(dump):
+                    raise ValueError('The stopped Go database or saved archive changed; create a fresh stopped-data backup')
+            print(f'Verified {archive_dir} ({header["sha256"]})')
+            return
         target = args.new_database
         if not target or '\x00' in target or len(target.encode('utf-8')) > 63:
             raise ValueError('Supply a new PostgreSQL database name of at most 63 UTF-8 bytes')
@@ -171,9 +225,11 @@ def run(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('backup', 'restore'))
+    parser.add_argument('action', choices=('backup', 'verify', 'restore'))
     parser.add_argument('--archive', type=Path, required=True, help='new backup directory or existing restore bundle')
     parser.add_argument('--dsn-file', type=Path, help='UTF-8 PostgreSQL URI, alternatively use S9A1_POSTGRES_DSN or native libpq settings')
+    parser.add_argument('--server-root', type=Path, help='use the exact Go server database target for a stopped deployment')
+    parser.add_argument('--source-id', help='SHA-256 identity of the deployment inputs, used with --server-root')
     parser.add_argument('--bin-dir', type=Path, help='directory containing PostgreSQL client tools of the server major version')
     parser.add_argument('--maintenance-db', default='postgres', help='connect here to create the restore target')
     parser.add_argument('--new-database', help='fresh restore target, created using template0')

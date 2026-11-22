@@ -42,29 +42,91 @@ type Quest struct {
 	RewardRows                                                                                                     []RewardRow
 	FateIntroduction, AcceptanceSupported, TownHandIn, OrderedDungeonParent, DungeonNpcHandIn, OutsideDungeonClaim bool
 	QuestionChoices                                                                                                byte
-	NpcRangeTarget                                                                                                 *struct{ Town, Area, X, Y uint16 }
-	TownCinematicTarget, DungeonCinematicTarget                                                                    *struct{ Movie, Map uint32 }
-	Operations                                                                                                     *operationRules
+	NpcRangeTarget                                                                                                 *NpcTarget
+	CommunicatorTarget                                                                                             *struct {
+		ItemHash, SceneHash string
+		Arrival             questPoint
+	}
+	TownCinematicTarget *struct {
+		Movie      uint32
+		Town, Area uint16
+	}
+	DungeonCinematicTarget *struct {
+		Movie, Map   uint32
+		ResourceHash string
+	}
+	DestinationRequirements                         []struct{ Dungeon, MinimumDifficulty int }
+	DropRules                                       []QuestDropRule
+	ExperienceByLevel                               []*uint32
+	SelectionRewardRows                             []RewardRow
+	GoldAward, GoldRequirement                      uint32
+	TownPassive, DungeonPassive, MixedDungeonParent bool
+	TpAward                                         uint16
+	CascadeClear                                    []uint16
+	SkillEffects                                    []struct {
+		Job                       byte
+		Id                        uint16
+		SpDiscount, MaximumRefund bool
+	}
+	Operations *operationRules
+}
+
+type NpcTarget struct {
+	NpcId            uint32
+	Town, Area, X, Y uint16
+	ResourceHash     string
 }
 type Ticket struct {
 	Criterion
+	Hash                 string
 	Equipment            bool
 	Grade, ObjectiveType string
 	ProhibitedFlags      []string
 	CascadeClear         []uint16
 	QuestionChoices      byte
+	Name, RewardType     string
+	EquipmentSlotQuest   bool
+	GoldAward            uint32
+	Rewards              []Material
+	RewardRows           []RewardRow
+	TitleRewards         []uint32
+	SkillEffects         []struct {
+		Job                       byte
+		Id                        uint16
+		SpDiscount, MaximumRefund bool
+	}
+	ConditionQuestHide []uint16
 }
 type Data struct {
 	Ordinary         []Quest
 	Tickets          []Ticket
 	AcceptanceGrants []grant
+	RewardTemplates  []json.RawMessage
+	SkillDefinitions []effectSkill
+	InitialSkills    map[byte][]questSkill
+	Past             []pastQuest
+	GrowthItems      growthItems
+	BattlePass       *BattlePassData
+	Disguise         *DisguiseData
 }
 type Catalog struct {
-	ordinary map[uint16]*Quest
-	tickets  map[uint16]*Ticket
-	quests   []Quest
-	extra    []Ticket
-	grants   map[uint32]grant
+	ordinary      map[uint16]*Quest
+	tickets       map[uint16]*Ticket
+	quests        []Quest
+	extra         []Ticket
+	grants        map[uint32]grant
+	rewards       map[uint32]json.RawMessage
+	effectSkills  map[[2]uint16]skillDefinition
+	initialSkills map[byte][]questSkill
+	past          []pastQuest
+	growth        growthItems
+	BattlePass    *BattlePassData
+	Disguise      *DisguiseData
+}
+
+func (c *Catalog) IsCinematic(id uint16) bool {
+	q := c.ordinary[id]
+	return q != nil && q.Kind == cinematic
 }
 
 func New(d Data) (*Catalog, error) {
@@ -72,7 +134,24 @@ func New(d Data) (*Catalog, error) {
 		return nil, errors.New("quest definitions are missing")
 	}
 	c := &Catalog{ordinary: make(map[uint16]*Quest, len(d.Ordinary)), tickets: make(map[uint16]*Ticket, len(d.Tickets)), quests: d.Ordinary, extra: d.Tickets}
+	c.past = d.Past
+	c.growth = d.GrowthItems
+	c.BattlePass = d.BattlePass
+	c.Disguise = d.Disguise
 	c.grants = make(map[uint32]grant, len(d.AcceptanceGrants))
+	c.rewards = make(map[uint32]json.RawMessage, len(d.RewardTemplates))
+	c.initialSkills = d.InitialSkills
+	c.effectSkills = make(map[[2]uint16]skillDefinition, len(d.SkillDefinitions))
+	for _, skill := range d.SkillDefinitions {
+		c.effectSkills[[2]uint16{uint16(skill.Job), skill.Definition.Id}] = skill.Definition
+	}
+	for _, raw := range d.RewardTemplates {
+		var t grantTemplate
+		if json.Unmarshal(raw, &t) != nil || t.TemplateID == 0 || c.rewards[t.TemplateID] != nil {
+			return nil, errors.New("invalid frozen quest reward resource")
+		}
+		c.rewards[t.TemplateID] = raw
+	}
 	for _, g := range d.AcceptanceGrants {
 		var t grantTemplate
 		if json.Unmarshal(g.Template, &t) != nil || !t.valid() || t.Kind != 2 || t.FirstBagSlot != 177 || t.LastBagSlot != 232 || t.AccountCommonInventory || t.ResourceExpiration != nil || len(g.Core) != 119 || !json.Valid(g.Attributes) {

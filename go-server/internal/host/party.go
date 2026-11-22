@@ -11,6 +11,9 @@ import (
 )
 
 func (g *game) party(ctx context.Context, op uint16, body []byte) error {
+	if g.channel == 63 {
+		return g.oculusParty(ctx, op, body)
+	}
 	var create protocol.PartyCreate
 	var err error
 	if op == 12 {
@@ -35,7 +38,7 @@ func (g *game) party(ctx context.Context, op uint16, body []byte) error {
 		}
 		return g.send(0, 488, n)
 	}
-	ready := g.channel == 19 && r.SelectedID != 0 && r.Phase == storage.TownReady && g.opening == nil
+	ready := g.channel == 19 && r.SelectedID != 0 && r.Phase == storage.TownReady && g.opening == nil && !g.ordinary.Active() && !g.ordinary.Returning()
 	if op == 13 {
 		if !ready || binary.LittleEndian.Uint32(body) != 0 {
 			return reject("当前无法退出队伍，请先结束挑战、返回城镇并等待加载完成。")

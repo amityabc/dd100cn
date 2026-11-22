@@ -1,7 +1,6 @@
 package opening
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/binary"
@@ -12,50 +11,13 @@ import (
 	"slices"
 	"strings"
 	"time"
-	"unicode/utf16"
 
 	"s9a1/server/internal/protocol"
+	"s9a1/server/internal/savejson"
 	"s9a1/server/internal/storage"
 )
 
-// The legacy store compares receipt Input as an exact string on retries.
-// System.Text.Json's default encoder additionally escapes '+', apostrophes,
-// backticks, and multibyte Unicode, including in the base64 report field.
-type legacyString string
-
-func (s legacyString) MarshalJSON() ([]byte, error) {
-	var w bytes.Buffer
-	w.WriteByte('"')
-	for _, r := range s {
-		switch r {
-		case '\b':
-			w.WriteString(`\b`)
-		case '\t':
-			w.WriteString(`\t`)
-		case '\n':
-			w.WriteString(`\n`)
-		case '\f':
-			w.WriteString(`\f`)
-		case '\r':
-			w.WriteString(`\r`)
-		case '\\':
-			w.WriteString(`\\`)
-		default:
-			if r >= 32 && r < 127 && !strings.ContainsRune("\"&'+<>`", r) {
-				w.WriteRune(r)
-				continue
-			}
-			if r <= 0xffff {
-				fmt.Fprintf(&w, `\u%04X`, r)
-			} else {
-				a, b := utf16.EncodeRune(r)
-				fmt.Fprintf(&w, `\u%04X\u%04X`, a, b)
-			}
-		}
-	}
-	w.WriteByte('"')
-	return w.Bytes(), nil
-}
+type legacyString = savejson.String
 
 type receiptInput struct {
 	Source, Version         string

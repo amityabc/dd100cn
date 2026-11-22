@@ -1,0 +1,476 @@
+diff --git a/Tool/Local-Run.ps1 b/Tool/Local-Run.ps1
+index 6c40cec..2c7b10f 100644
+--- a/Tool/Local-Run.ps1
++++ b/Tool/Local-Run.ps1
+@@ -26,13 +26,27 @@ if($PSBoundParameters.ContainsKey('StoppedDataBackup') -and [string]::IsNullOrWh
+ if($StoppedDataBackup -and ($isolated -or $Mode -notin @('Start','BuildRun'))){throw 'StoppedDataBackup requires a normal default-root Start or BuildRun.'}
+ $next=if($isolated){[IO.Path]::GetFullPath($ServerRoot).TrimEnd('\','/')}else{Join-Path $Root 'Server'}
+ if($isolated -and (!$ServerOnly -or !$next.StartsWith((Join-Path $Root 'Work')+'\',[StringComparison]::OrdinalIgnoreCase))){throw 'An overridden ServerRoot must be inside Repository/Work and requires -ServerOnly.'}
+-$hostFile=Join-Path $next 'artifacts/bin/Serve100.Host/release/Serve100.Host.dll'
++$goHelper=Join-Path $PSScriptRoot 'Go-Runtime.ps1'
++if(![IO.File]::Exists($goHelper)){$goHelper=Join-Path $Root 'go-server/tools/launcher-runtime.ps1'}
++if(![IO.File]::Exists($goHelper)){$goHelper=Join-Path (Split-Path -Parent $Root) 'go-server/tools/launcher-runtime.ps1'}
++if([IO.File]::Exists($goHelper)){. $goHelper}
++$goProject=if(!$isolated -and (Get-Command Get-S9A1GoProject -ErrorAction SilentlyContinue)){Get-S9A1GoProject $Root}else{$null}
++$goHost=Join-Path $next 'artifacts/bin/serve100/release/serve100.exe'
++$goRuntime=!!$goProject -or [IO.File]::Exists($goHost) -or [IO.File]::Exists((Join-Path $Root 'release-manifest.json'))
++$hostFile=if($goRuntime){$goHost}else{Join-Path $next 'artifacts/bin/Serve100.Host/release/Serve100.Host.dll'}
++if($goRuntime -and !(Get-Command Test-S9A1GoBuild -ErrorAction SilentlyContinue)){throw 'Missing Go runtime lifecycle helper.'}
++$originRoot=if($goProject){Split-Path -Parent $goProject}else{$Root}
++if($SyncOrigin -and $goRuntime -and (!$goProject -or !(Test-Path -LiteralPath (Join-Path $originRoot '.git')))){
++    throw 'Git 同步要求可构建的 Go 源码仓库；发行运行目录沿用已安装程序。'
++}
++if($goProject -and !$env:S9A1_CREATION_CATALOG){$env:S9A1_CREATION_CATALOG=Join-Path $goProject '.work/catalog/characters.json'}
+ $runtime=Join-Path $next 'runtime'
+ $receiptFile=Join-Path $runtime 'local-run.json'
+ $readyFile=Join-Path $runtime 'next-ready.json'
+ $bridge=Join-Path $runtime 'client-launch'
+ $shell=Join-Path $env:SystemRoot 'System32/WindowsPowerShell/v1.0/powershell.exe'
+-$dotnet=(Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
++$serverImage=if($goRuntime){$goHost}else{(Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source}
++$serverHostArgs=if($goRuntime){@()}else{@($hostFile)}
+ $lifecycleLock=$null
+ $attemptStarted=$false
+ $reusingServer=$false
+@@ -226,16 +240,20 @@ function Match-Identity($Identity){
+     if($live -and (Same-Path $live.ExecutablePath $Identity.ExecutablePath) -and $live.StartedUtcTicks -eq [long]$Identity.StartedUtcTicks){return $live};return $null
+ }
+ function Is-Server($p){
+-    if(!$p -or !(Same-Path $p.ExecutablePath $dotnet)){return $false}
++    if(!$p -or !(Same-Path $p.ExecutablePath $serverImage)){return $false}
+     # Both positional DLL and --root must be full, exact arguments.
+     # Windows accepts both separators, including mixed paths from direct Host starts.
+     $commandLine=([string]$p.CommandLine).Replace('/','\')
+-    return $commandLine -match ('(?:^|\s)"?'+[regex]::Escape($hostFile)+'"?(?=\s|$)') -and $commandLine -match ('(?:^|\s)--root\s+"?'+[regex]::Escape($next)+'"?(?=\s|$)')
++    return ($goRuntime -or $commandLine -match ('(?:^|\s)"?'+[regex]::Escape($hostFile)+'"?(?=\s|$)')) -and $commandLine -match ('(?:^|\s)--root\s+"?'+[regex]::Escape($next)+'"?(?=\s|$)')
+ }
+ function Get-RunInputsDigest {
+     # Hash effective file inputs, including custom resource paths and environment
+     # overrides. Never include mutable player databases or diagnostic output.
+     $paths=@((Join-Path $next 'config/server.json'),(Join-Path $next 'config/local.json'))
++    if($goRuntime){
++        $goCatalog=if($env:S9A1_CREATION_CATALOG){Resolve-StartupPath $env:S9A1_CREATION_CATALOG $next}else{Join-Path $next 'Data/Pvf/characters.json'}
++        $paths+=$goCatalog
++    }
+     foreach($key in @(@('Resources','Pvf'),@('Resources','ClientProfile'),@('Gameplay','ChannelScript'))){
+         $path=Resolve-StartupPath ([string](Get-RuntimeValue $next $key[0] $key[1])) $next
+         if($path){$paths+=$path;if($key[1] -eq 'Pvf'){$paths+=(Join-Path (Split-Path -Parent $path) 'sk.dat')}}
+@@ -266,7 +284,8 @@ function Get-ReusableReadyServer {
+     $configuredClient=Resolve-StartupPath ([string](Get-RuntimeValue $next 'Gameplay' 'ClientDirectory')) $next
+     if(!$configuredClient -or !(Same-Path $configuredClient $saved.ClientDirectory) -or
+         ($ClientDirectory -and !(Same-Path $configuredClient $ClientDirectory))){return $null}
+-    if(!(Test-LocalServerBuildReusable $Root (Read-Json (Join-Path $runtime 'installed-source.json')))){return $null}
++    if($goRuntime){if(!(Test-S9A1GoBuild $goProject $hostFile)){return $null}}
++    elseif(!(Test-LocalServerBuildReusable $Root (Read-Json (Join-Path $runtime 'installed-source.json')))){return $null}
+     if((Get-RunInputsDigest) -ne $saved.RuntimeInputsDigest){return $null}
+     return $saved
+ }
+@@ -277,7 +296,8 @@ function Find-Servers{
+         $p=Process-Identity ([int]$ready.ProcessId)
+         if((Is-Server $p) -and $p.StartedUtcTicks -eq [long]$ready.StartedUtcTicks){$found[$p.ProcessId]=$p}
+     }
+-    foreach($c in @(Get-CimInstance Win32_Process -Filter "Name='dotnet.exe'")){
++    $serverName=[IO.Path]::GetFileName($serverImage)
++    foreach($c in @(Get-CimInstance Win32_Process -Filter ("Name='"+$serverName+"'"))){
+         # Filter the already-read full image and Host/root arguments before
+         # opening handles and querying every unrelated dotnet identity again.
+         # A matching snapshot still requires the bound live identity below.
+@@ -440,7 +460,7 @@ function Stop-Local{
+             $handle=Get-ProvedServerHandle $identity
+             if($handle){$serverHandles[$identity.ProcessId]=$handle}
+         }
+-        & $dotnet $hostFile --request-stop --root $next | Out-Host
++        & $serverImage @serverHostArgs --request-stop --root $next | Out-Host
+         if($LASTEXITCODE -ne 0){throw 'Server stop request failed; existing artifacts were preserved.'}
+         foreach($identity in $servers){
+             $p=$serverHandles[$identity.ProcessId]
+@@ -464,7 +484,14 @@ function Stop-Local{
+     Write-Host ('Closed this project: client processes='+$owned.Count+'; server processes='+$servers.Count)
+ }
+ function Prepare-LocalConfig{
+-    return (Get-StartupClientConfig -Root $Root -ClientDirectory $ClientDirectory -ServerOnly:$ServerOnly -NonInteractive:$NonInteractive -PrepareRuntimeInputs -ForceClientToolsBuild:($Mode -eq 'BuildRun'))
++    return (Get-StartupClientConfig -Root $Root -ClientDirectory $ClientDirectory -ServerOnly:$ServerOnly -NonInteractive:$NonInteractive -PrepareRuntimeInputs -ForceClientToolsBuild:(!$goRuntime -and $Mode -eq 'BuildRun'))
++}
++function Confirm-LocalStoppedDataBackup {
++    if(!$StoppedDataBackup){return}
++    if($goRuntime){
++        if(@(Find-Servers).Count){throw 'The Go process must be stopped before verifying a deployment backup.'}
++        Invoke-S9A1StoppedSave $Root $StoppedDataBackup 'verify'
++    }else{Assert-LocalCandidateStoppedDataBackup $Root $StoppedDataBackup}
+ }
+ Push-Location -LiteralPath $Root
+ try{
+@@ -474,7 +501,7 @@ try{
+     . (Join-Path $Root 'ClientTools/Resource-Launcher.ps1')
+     if($SyncOrigin){
+         . (Join-Path $Root 'Tool/Sync-Origin.ps1')
+-        if($OriginPlan){Assert-OriginReportPath $Root $OriginPlan; $originSyncReceipt=$OriginPlan}
++        if($OriginPlan){Assert-OriginReportPath $originRoot $OriginPlan; $originSyncReceipt=$OriginPlan}
+     }
+     Assert-LocalCandidateNoReparse $Root $next
+     Assert-LocalCandidateNoReparse $next $runtime
+@@ -524,38 +551,47 @@ try{
+     if(!$ServerOnly){Assert-LocalGamePortsAvailable}
+     if($SyncOrigin){
+         . (Join-Path $Root 'Tool/Sync-Origin.ps1')
+-        $originSyncReceipt=Invoke-OriginSourceSync $Root $OriginPlan
++        $originSyncReceipt=Invoke-OriginSourceSync $originRoot $OriginPlan
+         # Refresh helpers from the fetched source; the lifecycle lock stays held.
+         . (Join-Path $Root 'Tool/Build-LocalCandidate.ps1') -Root $Root
+         . (Join-Path $Root 'Tool/Client-Selection.ps1')
+         . (Join-Path $Root 'Tool/Runtime-Config.ps1')
+         . (Join-Path $Root 'ClientTools/Resource-Launcher.ps1')
++        if($goProject){. $goHelper}
+         Set-OriginProgress $originSyncReceipt 'Building' '编译登录器'
+         [void](Get-LauncherUIPackage $Root -Force)
+     }
+     [Serve100.Infrastructure.Diagnostics.BoundedLogFile]::MaintainRuntimeHistory($next,(Get-FramePath $next),[string[]](Get-BoundedProtectedPaths $next))
+-    if($StoppedDataBackup){Assert-LocalCandidateStoppedDataBackup $Root $StoppedDataBackup}
++    Confirm-LocalStoppedDataBackup
+     if(!$isolated){
+         if($originSyncReceipt){Set-OriginProgress $originSyncReceipt 'Building' '准备资源与编译客户端工具'}
+         Set-LocalRunProgress 20 '准备配置和客户端工具' '首次启动可能需要编译配套工具'
+         $clientInfo=Prepare-LocalConfig
+-        if(!(Test-Path -LiteralPath (Join-Path $Root '.git'))){
++        if(!$goRuntime -and !(Test-Path -LiteralPath (Join-Path $Root '.git'))){
+             & $shell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'Tool/Start-Source.ps1') --snapshot-only
+             if($LASTEXITCODE -ne 0){throw 'Could not import the source archive.'}
+         }
+         Set-LocalRunProgress 30 '检查运行资源' '检查 PVF 和运行所需文件'
+-        & $shell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'Tool/Check-Resources.ps1') -Root $Root -FrameworkRoot $next
+-        if($LASTEXITCODE -ne 0){throw 'Resource check failed.'}
++        if(!$goRuntime){
++            & $shell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'Tool/Check-Resources.ps1') -Root $Root -FrameworkRoot $next
++            if($LASTEXITCODE -ne 0){throw 'Resource check failed.'}
++        }
+         Set-LocalRunProgress 40 '检查服务端版本' '核对源码与已安装产物，判断是否需要编译'
+         $installed=Read-Json (Join-Path $runtime 'installed-source.json')
+         $buildCheckTimer=[Diagnostics.Stopwatch]::StartNew()
+-        $reuse=Test-LocalServerBuildReusable $Root $installed
++        $reuse=if($goRuntime){Test-S9A1GoBuild $goProject $hostFile}else{Test-LocalServerBuildReusable $Root $installed}
+         $buildCheckTimer.Stop();$buildCheckSeconds=[Math]::Round($buildCheckTimer.Elapsed.TotalSeconds,2)
+         if(!$reuse){
+             if($originSyncReceipt){Set-OriginProgress $originSyncReceipt 'Building' '编译服务端'}
+             Set-LocalRunProgress 45 '编译并部署服务端' '正在编译并部署；优先使用本机依赖缓存，仅缺少依赖时需要联网下载'
+-            & $shell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'Tool/Build-LocalCandidate.ps1') -Root $Root
+-            if($LASTEXITCODE -ne 0){throw 'Candidate build failed; no server was started.'}
++            if($goRuntime){
++                if(!$goProject){throw 'Missing the packaged Go host; reinstall a complete release.'}
++                Assert-LocalCandidateNoReparse $next $hostFile
++                Install-S9A1GoHost $goProject $hostFile
++            }else{
++                & $shell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'Tool/Build-LocalCandidate.ps1') -Root $Root
++                if($LASTEXITCODE -ne 0){throw 'Candidate build failed; no server was started.'}
++            }
+         }else{
+             $buildReused=$true
+             Set-LocalRunProgress 65 '复用已编译的服务端' '服务端源码、构建配置及产物校验一致，跳过编译'
+@@ -567,7 +603,7 @@ try{
+     if(!(Test-Path -LiteralPath $hostFile)){throw 'Missing server host artifact.'}
+     # Config preparation and a requested build must not invalidate the frozen
+     # backup. The lifecycle lock remains held before the Host can open its DB.
+-    if($StoppedDataBackup){Assert-LocalCandidateStoppedDataBackup $Root $StoppedDataBackup}
++    Confirm-LocalStoppedDataBackup
+     [void][IO.Directory]::CreateDirectory($runtime)
+     $framePath=Get-FramePath $next
+     $captureStartOffset=0L;$captureStartFileIdentity=''
+@@ -590,9 +626,11 @@ try{
+         $launcherArchives=@([ordered]@{Path=$archive;Kind='PreviousRunArchive';CreatedUtc=[DateTime]::UtcNow.ToString('o')})
+     }
+     $installed=Read-Json (Join-Path $runtime 'installed-source.json')
+-    $buildIdentity=Read-Json (Join-Path $next 'artifacts/build/identity.json')
++    $buildIdentity=if($goRuntime){[pscustomobject]@{BuildId=(Get-FileHash -LiteralPath $hostFile).Hash}}else{Read-Json (Join-Path $next 'artifacts/build/identity.json')}
++    $sourceCommit=if(!$goRuntime -or $goProject -and (Test-Path -LiteralPath (Join-Path $originRoot '.git'))){& git -C $originRoot rev-parse HEAD 2>$null}else{''}
++    $sourceDigest=if($goProject){(Get-S9A1GoBuildIdentity $hostFile).SourceDigest}else{$installed.SourceDigest}
+     $diagnosticSession=[ordered]@{Schema=1;ProjectRoot=$Root;ServerRoot=$next;RunId=$runId;StartUtc=[DateTime]::UtcNow.ToString('o');ClientDirectory=$(if($ServerOnly){Resolve-StartupPath ([string](Get-RuntimeValue $next 'Gameplay' 'ClientDirectory')) $next}else{$clientInfo.Client});Server=$null;Launcher=$null;ClientProcesses=@();
+-        SourceCommit=(& git -C $Root rev-parse HEAD 2>$null);SourceDigest=$installed.SourceDigest;BuildId=$buildIdentity.BuildId;
++        SourceCommit=$sourceCommit;SourceDigest=$sourceDigest;BuildId=$buildIdentity.BuildId;
+         FrameLogPath=$framePath;FrameStartOffset=$captureStartOffset;FrameStartFileIdentity=$captureStartFileIdentity;StandardOutPath=(Join-Path $runtime 'local-server.stdout.log');StandardOutStartOffset=(File-Length (Join-Path $runtime 'local-server.stdout.log'));StandardOutStartFileIdentity=(Log-FileIdentity (Join-Path $runtime 'local-server.stdout.log'));
+         StandardErrPath=(Join-Path $runtime 'local-server.stderr.log');StandardErrStartOffset=(File-Length (Join-Path $runtime 'local-server.stderr.log'));StandardErrStartFileIdentity=(Log-FileIdentity (Join-Path $runtime 'local-server.stderr.log'));
+         ServerEventsPath=(Join-Path $runtime ('logs/server/'+$runId+'/events.jsonl'));ServerEventsStartOffset=0;
+@@ -607,9 +645,16 @@ try{
+     # WMI creates a detached process with no inherited entry-console pipes.
+     # Start-Process redirects can keep a calling automation's output pipe alive
+     # after PowerShell exits; CMD owns only the two project log file handles.
+-    $startup=New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly -Property @{ShowWindow=[uint16]0}
+-    if($next.Contains('%') -or $dotnet.Contains('%')){throw 'Percent characters are unsupported in the server launch path.'}
+-    $command='"'+(Join-Path $env:SystemRoot 'System32/cmd.exe')+'" /d /v:off /s /c ""'+$dotnet+'" "'+$hostFile+'" --root "'+$next+'" --run-id '+$runId+' --bounded-console 1>NUL 2>NUL"'
++    $startupProperties=@{ShowWindow=[uint16]0}
++    if($goRuntime){
++        $runtimeEnvironment=[Environment]::GetEnvironmentVariables('Process')
++        $startupProperties.EnvironmentVariables=[string[]]@($runtimeEnvironment.Keys | ForEach-Object { [string]$_+'='+$runtimeEnvironment[$_] })
++    }
++    $startup=New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly -Property $startupProperties
++    if($next.Contains('%') -or $serverImage.Contains('%')){throw 'Percent characters are unsupported in the server launch path.'}
++    $launchImage='"'+$serverImage+'"'
++    if(!$goRuntime){$launchImage+=' "'+$hostFile+'"'}
++    $command='"'+(Join-Path $env:SystemRoot 'System32/cmd.exe')+'" /d /v:off /s /c "'+$launchImage+' --root "'+$next+'" --run-id '+$runId+' --bounded-console 1>NUL 2>NUL"'
+     $created=Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine=$command;CurrentDirectory=$next;ProcessStartupInformation=$startup}
+     if($created.ReturnValue -ne 0){throw ('Server process creation failed: '+$created.ReturnValue)}
+     $spawnDeadline=[DateTime]::UtcNow.AddSeconds(10)
+@@ -643,7 +688,9 @@ try{
+     Set-LocalRunProgress 95 '本地服务端已就绪' '就绪信息已核验，正在完成启动流程'
+     Write-Host ('Server ready. PID='+$server.Id)
+     if($originSyncReceipt){Set-OriginProgress $originSyncReceipt 'Starting' '服务端已就绪，启动游戏'}
+-    if(!$NoCapture){Start-CaptureWindow $receipt $captureStartOffset $captureStartFileIdentity}
++    $frameMode=if($goRuntime){Get-RuntimeValue $next 'Diagnostics' 'FrameMode'}else{'full'}
++    if(!$NoCapture -and $frameMode -in @('metadata','full')){Start-CaptureWindow $receipt $captureStartOffset $captureStartFileIdentity}
++    elseif($goRuntime -and $frameMode -notin @('metadata','full')){Write-Host 'Application-frame capture is off; set Diagnostics:FrameMode to metadata or full to enable it.'}
+     else{Write-Host 'Capture window disabled; complete server frame logging remains enabled.'}
+     if($receipt.Capture){$diagnosticSession.Capture=[ordered]@{PacketLogPath=$receipt.Capture.PacketLog;ViewerLogPath=$receipt.Capture.ErrorLog;StatusPath=(Join-Path $receipt.Capture.Directory 'status.json')};Save-DiagnosticSession}
+     }else{
+@@ -660,7 +707,7 @@ try{
+     }
+     if(!$ServerOnly){
+         Set-LocalRunProgress 98 '启动游戏' '服务端已就绪，等待客户端资源兼容准备完成'
+-        $prepared=@(& $dotnet $hostFile --prepare-client --root $next)
++        $prepared=@(& $serverImage @serverHostArgs --prepare-client --root $next)
+         if($LASTEXITCODE -ne 0){throw 'Client launch preparation failed.'}
+         $receipt.ClientDirectory=$clientInfo.Client
+         . (Join-Path $Root 'ClientTools/Resource-Launcher.ps1')
+diff --git a/Tool/Start-Source.ps1 b/Tool/Start-Source.ps1
+index 7687c9e..3652711 100644
+--- a/Tool/Start-Source.ps1
++++ b/Tool/Start-Source.ps1
+@@ -6,6 +6,7 @@ $sourceSnapshotOnly=$sourceArguments -contains '--snapshot-only'
+ $sourceArguments=@($sourceArguments | Where-Object {$_ -ne '--snapshot-only'})
+ $sourceRoot=[IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
+ $sourceNext=Join-Path $sourceRoot 'Server'
++$sourceGoHost=Join-Path $sourceNext 'artifacts/bin/serve100/release/serve100.exe'
+ $sourceHost=Join-Path $sourceNext 'artifacts/bin/Serve100.Host/release/Serve100.Host.dll'
+ $sourceReadyRoot=$sourceNext
+ for($sourceIndex=0;$sourceIndex -lt $sourceArguments.Count-1;$sourceIndex++) {
+@@ -35,6 +36,18 @@ function Get-SourceGit([string[]]$GitArguments) {
+     } finally {$sourceGitProcess.Dispose()}
+ }
+ try {
++    if(!$sourceSnapshotOnly -and [IO.File]::Exists($sourceGoHost)){
++        $sourceGoCatalog=Join-Path (Split-Path -Parent $sourceRoot) 'go-server/.work/catalog/characters.json'
++        if(![IO.File]::Exists((Join-Path $sourceRoot 'release-manifest.json')) -and !$env:S9A1_CREATION_CATALOG -and [IO.File]::Exists($sourceGoCatalog)){
++            $env:S9A1_CREATION_CATALOG=$sourceGoCatalog
++        }
++        & $sourceGoHost --root $sourceNext @sourceArguments
++        exit $LASTEXITCODE
++    }
++    if([IO.File]::Exists((Join-Path $sourceRoot 'release-manifest.json'))){throw 'The Go runtime package requires its installed native server.'}
++    if([IO.File]::Exists((Join-Path (Split-Path -Parent $sourceRoot) 'go-server/go.mod'))){
++        throw 'Build the Go source with Tool/Local-Run.ps1 -Mode BuildRun before using this entry.'
++    }
+     $sourceOperation=@($sourceArguments | Where-Object {$_ -in @('--request-stop','--prepare-client','--check-inputs')}).Count -gt 0
+     if(!$sourceOperation) {
+         $sourceReady=Join-Path $sourceReadyRoot 'runtime/next-ready.json'
+diff --git a/Tool/Launcher-UI.ps1 b/Tool/Launcher-UI.ps1
+index a65a596..735fb95 100644
+--- a/Tool/Launcher-UI.ps1
++++ b/Tool/Launcher-UI.ps1
+@@ -45,6 +45,11 @@ function Publish-LauncherUI([string]$Root,[string]$Directory,[string]$Artifacts)
+     if($LASTEXITCODE -ne 0){throw '新版登录器编译失败；已保留此前可用版本。'}
+ }
+ function Get-LauncherUIPackage([string]$Root,[switch]$Force) {
++    $bundled=Join-Path $Root 'LauncherUI/S9A1LauncherUI.exe'
++    if([IO.File]::Exists((Join-Path $Root 'release-manifest.json'))){
++        if([IO.File]::Exists($bundled)){return $bundled}
++        throw '此发行包缺少 LauncherUI/S9A1LauncherUI.exe。'
++    }
+     $work=Join-Path $Root 'Work/LauncherUI'
+     [void][IO.Directory]::CreateDirectory($work)
+     $lease=[IO.File]::Open((Join-Path $work 'build.lock'),[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
+diff --git a/ClientTools/LauncherUI/Program.cs b/ClientTools/LauncherUI/Program.cs
+index 24e14c5..9991acd 100644
+--- a/ClientTools/LauncherUI/Program.cs
++++ b/ClientTools/LauncherUI/Program.cs
+@@ -49,7 +49,8 @@ internal sealed partial class LauncherForm : Form
+     private Process? launchProcess;
+     private bool catalogInitializationStarted;
+     private bool syncingOrigin;
+-    private bool SourceMode => File.Exists(Path.Combine(root, "Tool", "Local-Run.ps1"));
++    private bool UsesLocalRun => File.Exists(Path.Combine(root, "Tool", "Local-Run.ps1"));
++    private bool SourceMode => LauncherStartup.FindOriginRoot(root) != null;
+     private CancellationTokenSource? resourceScanCancellation;
+     private Task resourceScanTask = Task.CompletedTask;
+     private string scanningClient = "";
+@@ -119,6 +120,8 @@ internal sealed partial class LauncherForm : Form
+         var candidate = new DirectoryInfo(AppContext.BaseDirectory);
+         while (candidate is not null)
+         {
++            if (File.Exists(Path.Combine(candidate.FullName, "Tool", "Local-Run.ps1")) &&
++                File.Exists(Path.Combine(candidate.FullName, "Server", "artifacts", "bin", "serve100", "release", "serve100.exe"))) return candidate.FullName;
+             if (File.Exists(Path.Combine(candidate.FullName, "Tool", "Release", "Start-Game.ps1"))) return candidate.FullName;
+             if (File.Exists(Path.Combine(candidate.FullName, "Start-Game.ps1")) && File.Exists(Path.Combine(candidate.FullName, "Serve100.Host.exe"))) return candidate.FullName;
+             candidate = candidate.Parent;
+@@ -229,6 +232,8 @@ internal sealed partial class LauncherForm : Form
+ 
+     private (string FileName, string WorkingDirectory, string? Dll)? ResolveHostCommand()
+     {
++        var go = Path.Combine(LauncherClientContext.ServerRoot(root), "artifacts", "bin", "serve100", "release", "serve100.exe");
++        if (File.Exists(go)) return (go, LauncherClientContext.ServerRoot(root), null);
+         foreach (var exe in new[] { Path.Combine(root, "Serve100.Host.exe"), Path.Combine(root, "Host", "Serve100.Host.exe"), Path.Combine(root, "Server", "Serve100.Host.exe") })
+             if (File.Exists(exe)) return (exe, Path.GetDirectoryName(exe)!, null);
+         foreach (var dll in new[] { Path.Combine(root, "Serve100.Host.dll"), Path.Combine(root, "Host", "Serve100.Host.dll"), Path.Combine(root, "Server", "Serve100.Host.dll"), Path.Combine(root, "Server", "artifacts", "bin", "Serve100.Host", "release", "Serve100.Host.dll"), Path.Combine(root, "Server", "artifacts", "bin", "Serve100.Host", "debug", "Serve100.Host.dll") })
+@@ -445,7 +450,7 @@ internal sealed partial class LauncherForm : Form
+     private void SendState()
+     {
+         if (view.CoreWebView2 is null) return;
+-        Send(new { type = "state", runProgress = runProgress.View, serverUp, serverChanging, canControlServer = SourceMode, preview = false, authenticated, account = "local", accountReady = authenticated, remember, hasSavedPassword = false, savedAccount = "local", client, version = "S7 LauncherUI " + CurrentVersionText, busy, game = gameRunning, multiClient, renderMode = "d3d11", maximized = WindowState == FormWindowState.Maximized, stage, updateAvailable = update.Available && update.LauncherAvailable, serverUpdateAvailable = update.ServerAvailable, updateRunning = false, updatePercent = update.Percent, updateVersion = update.Version, serverVersion = update.ServerVersion, gmScan, releases = Array.Empty<object>(), mods = new { } });
++        Send(new { type = "state", runProgress = runProgress.View, serverUp, serverChanging, canControlServer = UsesLocalRun, preview = false, authenticated, account = "local", accountReady = authenticated, remember, hasSavedPassword = false, savedAccount = "local", client, version = "S7 LauncherUI " + CurrentVersionText, busy, game = gameRunning, multiClient, renderMode = "d3d11", maximized = WindowState == FormWindowState.Maximized, stage, updateAvailable = update.Available && update.LauncherAvailable, serverUpdateAvailable = update.ServerAvailable, updateRunning = false, updatePercent = update.Percent, updateVersion = update.Version, serverVersion = update.ServerVersion, gmScan, releases = Array.Empty<object>(), mods = new { } });
+     }
+ 
+     private void SendPanelState()
+diff --git a/ClientTools/LauncherUI/LauncherServerControl.cs b/ClientTools/LauncherUI/LauncherServerControl.cs
+index 9a1cb04..375cbe6 100644
+--- a/ClientTools/LauncherUI/LauncherServerControl.cs
++++ b/ClientTools/LauncherUI/LauncherServerControl.cs
+@@ -1,4 +1,5 @@
+ using System.Diagnostics;
++using System.Security.Cryptography;
+ using System.Text.Json;
+ 
+ namespace S9A1.LauncherUI;
+@@ -30,10 +31,17 @@ internal static class LauncherServerControl
+             using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(server, "runtime", "next-ready.json")));
+             var value = doc.RootElement;
+             string host = Path.GetFullPath(value.GetProperty("HostPath").GetString()!);
++            var go = Path.Combine(server, "artifacts", "bin", "serve100", "release", "serve100.exe");
++            bool nativeGo = string.Equals(host, go, StringComparison.OrdinalIgnoreCase);
+             if (!host.StartsWith(server + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+-                || Path.GetFileName(host) != "Serve100.Host.dll" || !File.Exists(host)) return false;
++                || (!nativeGo && Path.GetFileName(host) != "Serve100.Host.dll") || !File.Exists(host)) return false;
+             using var process = Process.GetProcessById(value.GetProperty("ProcessId").GetInt32());
+-            return !process.HasExited && process.StartTime.ToUniversalTime().Ticks == value.GetProperty("StartedUtcTicks").GetInt64();
++            if (process.HasExited || process.StartTime.ToUniversalTime().Ticks != value.GetProperty("StartedUtcTicks").GetInt64()) return false;
++            if (!nativeGo) return true;
++            if (value.GetProperty("Schema").GetInt32() != 1 || !value.GetProperty("LocalEntry").GetBoolean() ||
++                !string.Equals(process.MainModule?.FileName, host, StringComparison.OrdinalIgnoreCase)) return false;
++            using var stream = File.OpenRead(host);
++            return value.GetProperty("HostSha256").GetString() == Convert.ToHexString(SHA256.HashData(stream));
+         }
+         catch (Exception error) when (error is IOException or JsonException or ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception or KeyNotFoundException)
+         { return false; }
+diff --git a/ClientTools/Resource-Launcher.ps1 b/ClientTools/Resource-Launcher.ps1
+index 689884c..75dd5cc 100644
+--- a/ClientTools/Resource-Launcher.ps1
++++ b/ClientTools/Resource-Launcher.ps1
+@@ -45,6 +45,8 @@ function Resolve-ClientNativeServerReady {
+         }
+     } elseif ([IO.Path]::GetFileName($image) -ieq 'Serve100.Host.exe') {
+         $hostPath=[IO.Path]::ChangeExtension($image,'.dll');$hostIndex=0
++    } elseif ([IO.Path]::GetFileName($image) -ieq 'serve100.exe') {
++        $hostPath=$image;$hostIndex=0
+     }
+     if(!$hostPath){throw 'The channel listener is not the matching Serve100.Host process.'}
+     $argumentRoot=$null
+diff --git a/Server/START_SERVER.bat b/Server/START_SERVER.bat
+index bb42428..3599f2c 100644
+--- a/Server/START_SERVER.bat
++++ b/Server/START_SERVER.bat
+@@ -3,7 +3,22 @@ setlocal
+ set "task_root=%~dp0"
+ pushd "%task_root%"
+ if errorlevel 1 exit /b 1
+-dotnet "artifacts\bin\Serve100.Host\release\Serve100.Host.dll" --root "%task_root%." %*
++if exist "artifacts\bin\serve100\release\serve100.exe" (
++    if not exist "..\release-manifest.json" if not defined S9A1_CREATION_CATALOG if exist "..\..\go-server\.work\catalog\characters.json" set "S9A1_CREATION_CATALOG=%CD%\..\..\go-server\.work\catalog\characters.json"
++    "artifacts\bin\serve100\release\serve100.exe" --root "%task_root%." %*
++) else (
++    if exist "..\release-manifest.json" (
++        echo Missing installed Go server. Reinstall the release directory.
++        popd
++        exit /b 1
++    )
++    if exist "..\..\go-server\go.mod" (
++        echo Use Tool\Local-Run.ps1 -Mode BuildRun to compile the Go source first.
++        popd
++        exit /b 1
++    )
++    dotnet "artifacts\bin\Serve100.Host\release\Serve100.Host.dll" --root "%task_root%." %*
++)
+ set "taskExit=%errorlevel%"
+ popd
+ exit /b %taskExit%
+diff --git a/Server/STOP_SERVER.bat b/Server/STOP_SERVER.bat
+index c5d7318..49a4818 100644
+--- a/Server/STOP_SERVER.bat
++++ b/Server/STOP_SERVER.bat
+@@ -3,7 +3,21 @@ setlocal
+ set "task_root=%~dp0"
+ pushd "%task_root%"
+ if errorlevel 1 exit /b 1
+-dotnet "artifacts\bin\Serve100.Host\release\Serve100.Host.dll" --request-stop --root "%task_root%." %*
++if exist "artifacts\bin\serve100\release\serve100.exe" (
++    "artifacts\bin\serve100\release\serve100.exe" --request-stop --root "%task_root%." %*
++) else (
++    if exist "..\release-manifest.json" (
++        echo Missing installed Go server. Reinstall the release directory.
++        popd
++        exit /b 1
++    )
++    if exist "..\..\go-server\go.mod" (
++        echo No installed Go server binary for this instance.
++        popd
++        exit /b 1
++    )
++    dotnet "artifacts\bin\Serve100.Host\release\Serve100.Host.dll" --request-stop --root "%task_root%." %*
++)
+ set "taskExit=%errorlevel%"
+ popd
+ exit /b %taskExit%
+diff --git a/ClientTools/LauncherUI/LauncherStartup.cs b/ClientTools/LauncherUI/LauncherStartup.cs
+index b433278..b5f631a 100644
+--- a/ClientTools/LauncherUI/LauncherStartup.cs
++++ b/ClientTools/LauncherUI/LauncherStartup.cs
+@@ -31,7 +31,7 @@ internal sealed record LauncherStartup(string Mode, string? ClientDirectory, boo
+         var script = source ? Path.Combine(root, "Tool", "Local-Run.ps1")
+             : File.Exists(Path.Combine(root, "Start-Game.ps1")) ? Path.Combine(root, "Start-Game.ps1")
+             : Path.Combine(root, "Tool", "Release", "Start-Game.ps1");
+-        if (syncOrigin && !source) throw new InvalidOperationException("Git 同步只支持源码仓库。");
++        if (syncOrigin && FindOriginRoot(root) is null) throw new InvalidOperationException("Git 同步只支持可构建的源码仓库。");
+         if (!File.Exists(script)) throw new FileNotFoundException("找不到启动脚本", script);
+         var shell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
+             "WindowsPowerShell", "v1.0", "powershell.exe");
+@@ -52,4 +52,17 @@ internal sealed record LauncherStartup(string Mode, string? ClientDirectory, boo
+         }
+         return start;
+     }
++
++    internal static string? FindOriginRoot(string root)
++    {
++        if (File.Exists(Path.Combine(root, "release-manifest.json")) ||
++            !File.Exists(Path.Combine(root, "Tool", "Local-Run.ps1")) ||
++            !File.Exists(Path.Combine(root, "Tool", "Check-OriginUpdate.ps1"))) return null;
++        bool GoProject(string path) => File.Exists(Path.Combine(path, "go.mod")) && File.Exists(Path.Combine(path, "cmd", "serve100", "main.go"));
++        string? parent = Directory.GetParent(root)?.FullName;
++        var source = parent != null && Path.GetFileName(root).Equals("s9a1", StringComparison.OrdinalIgnoreCase) && GoProject(Path.Combine(parent, "go-server"))
++            && !GoProject(Path.Combine(root, "go-server")) ? parent : root;
++        string git = Path.Combine(source, ".git");
++        return Directory.Exists(git) || File.Exists(git) ? source : null;
++    }
+ }
+diff --git a/ClientTools/LauncherUI/LauncherForm.Origin.cs b/ClientTools/LauncherUI/LauncherForm.Origin.cs
+index 15c5648..f8c0ff5 100644
+--- a/ClientTools/LauncherUI/LauncherForm.Origin.cs
++++ b/ClientTools/LauncherUI/LauncherForm.Origin.cs
+@@ -91,12 +91,13 @@ internal sealed partial class LauncherForm
+ 
+     private async Task CheckOriginAsync(bool fetch)
+     {
+-        if (busy || originChecking || !SourceMode) return;
++        var repository = LauncherStartup.FindOriginRoot(root);
++        if (busy || originChecking || repository == null) return;
+         if (fetch) busy = true;
+         originCheckBlocksLaunch = fetch;
+         originChecking = true;
+         // Each checked plan has its own receipt; a completed sync remains reviewable.
+-        originReportPath = Path.Combine(root, "Work", "OriginSync", Guid.NewGuid().ToString("N"), "sync.json");
++        originReportPath = Path.Combine(repository, "Work", "OriginSync", Guid.NewGuid().ToString("N"), "sync.json");
+         origin = new OriginUpdateReport { Current = origin.Current, Stage = fetch ? "连接 origin，检查更新" : "读取当前 HEAD" };
+         StartOriginMonitor(); SendState(); SendPanelState();
+         originCheckCancellation = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+@@ -109,7 +110,7 @@ internal sealed partial class LauncherForm
+                 RedirectStandardOutput = true, RedirectStandardError = true
+             };
+             foreach (var arg in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+-                Path.Combine(root, "Tool", "Check-OriginUpdate.ps1"), "-Root", root, "-ReportPath", originReportPath })
++                Path.Combine(root, "Tool", "Check-OriginUpdate.ps1"), "-Root", repository, "-ReportPath", originReportPath })
+                 start.ArgumentList.Add(arg);
+             if (fetch) start.ArgumentList.Add("-Fetch");
+             using var process = Process.Start(start) ?? throw new InvalidOperationException("无法启动更新检查。");

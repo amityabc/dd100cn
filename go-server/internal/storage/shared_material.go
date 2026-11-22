@@ -9,6 +9,7 @@ import (
 	"math"
 	"slices"
 	"strings"
+	"time"
 )
 
 var sharedMaterialIDs = [...]uint32{3033, 3034, 3035, 3036, 3037, 3262, 10100115, 10100116, 10099773, 10099774, 10099775, 10158124}
@@ -47,11 +48,18 @@ func plainMaterial(a Asset, t materialDefinition) (bool, error) {
 	if err := json.Unmarshal(a.Attributes, &v); err != nil {
 		return false, err
 	}
+	if t.Kind != 2 || v.QualitySeed != 0 || v.Durability != 0 {
+		return false, nil
+	}
+	return ordinaryNewCore(a, t, v)
+}
+
+func ordinaryNewCore(a Asset, t materialDefinition, v materialAttributes) (bool, error) {
 	var binding uint8
 	if t.InitialSealed {
 		binding = 1
 	}
-	if t.Kind != 2 || len(a.Detail) != 0 || len(a.Core) != 119 || a.Core[13] != v.Binding || v.Binding != binding || v.QualitySeed != 0 || v.Durability != 0 ||
+	if len(a.Detail) != 0 || len(a.Core) != 119 || a.Core[13] != v.Binding || v.Binding != binding ||
 		v.Reinforcement != 0 || v.Forge != 0 || v.AmplificationType != 0 || v.AmplificationValue != 0 || v.Enchantment != 0 || v.EnchantUpgradeCount != 0 ||
 		v.InitialAmplification || v.Locked || v.MagicSeal != nil || v.Mythology != nil {
 		return false, nil
@@ -313,6 +321,10 @@ func (s *Store) PrepareTownInventory(ctx context.Context, l Lease, id uint16, re
 				if err != nil {
 					return out, err
 				}
+			}
+			c, in, err = s.expireTownInventory(ctx, tx, l, c, in, &r, time.Now())
+			if err != nil {
+				return out, err
 			}
 			_, err = tx.ExecContext(ctx, "UPDATE s9a1.accounts SET phase=$2,asset_revision=$3 WHERE account=$1", l.Account, TownLoading, r.AssetRevision)
 			if err != nil {

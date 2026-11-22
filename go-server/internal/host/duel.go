@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"math"
+	"time"
 
 	"s9a1/server/internal/duellobby"
 	"s9a1/server/internal/protocol"
@@ -16,6 +17,17 @@ type duelRoad struct{ from, to storage.Position }
 func (g *game) syncDuel(ctx context.Context, op uint16, r storage.Roster, c storage.Character) error {
 	if r.Phase != storage.Selected {
 		return storage.ErrPhase
+	}
+	if g.arcade.Owned(g.lease, c.ID) && !g.arcade.Closed {
+		if op == 120 && g.server.Characters.Fate != nil {
+			if err := g.send(0, 108, g.fateEvents(time.Now())); err != nil {
+				return err
+			}
+		}
+		if op == 143 {
+			return g.send(1, op, []byte{1, 0})
+		}
+		return g.send(1, op, []byte{0, 0})
 	}
 	if g.duelPosition == nil {
 		var err error
@@ -47,7 +59,7 @@ func (g *game) syncDuel(ctx context.Context, op uint16, r storage.Roster, c stor
 		return err
 	}
 	if op == 120 && g.server.Characters.Fate != nil {
-		if err = g.send(0, 108, fateEvents()); err != nil {
+		if err = g.send(0, 108, g.fateEvents(time.Now())); err != nil {
 			return err
 		}
 	}
@@ -78,6 +90,7 @@ func (g *game) syncDuel(ctx context.Context, op uint16, r storage.Roster, c stor
 	if err = g.send(0, 376, locks); err != nil {
 		return err
 	}
+	g.crystal = crystalProjection{loaded: true, selection: p.CrystalContractSelection}
 	return g.send(0, 19, skills)
 }
 
@@ -88,6 +101,9 @@ func (g *game) moveDuel(r storage.Roster, x, y uint16) error {
 	c, err := selected(r)
 	if err != nil {
 		return err
+	}
+	if g.arcade.Owned(g.lease, c.ID) && !g.arcade.Closed {
+		return nil
 	}
 	q, err := resources.ReadTownQuests(c.Gameplay)
 	if err != nil {
@@ -103,6 +119,9 @@ func (g *game) moveDuel(r storage.Roster, x, y uint16) error {
 }
 
 func (g *game) travelDuel(r storage.Roster, req protocol.TownChange, reject func() error) error {
+	if g.arcade.Owned(g.lease, r.SelectedID) && !g.arcade.Closed {
+		return reject()
+	}
 	if g.channel != 252 || r.Phase != storage.Selected || g.duelPosition == nil || req.NativeNPC || req.Kind != 0 || req.TargetNPC != 0 ||
 		req.Town != 10 || req.PreviousTown != 10 || req.Direction > 7 || req.X > math.MaxInt16 || req.Y > math.MaxInt16 {
 		return reject()

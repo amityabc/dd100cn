@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strings"
 
 	"s9a1/server/internal/storage/legacy"
 )
@@ -17,6 +19,8 @@ func main() {
 	mode := flag.String("mode", "inspect", "inspect, stage, or activate")
 	path := flag.String("source", "", "path to the old SQLite database or its consistent backup")
 	account := flag.String("account", "", "destination account for stage/activate")
+	dotnet := flag.String("dotnet", os.Getenv("S9A1_DOTNET"), "dotnet runtime for upgrading local-entry v1–v34 during activation")
+	upgrader := flag.String("upgrader", "", "offline LegacyUpgrade.dll (defaults to the project's built helper)")
 	flag.Parse()
 	if *path == "" {
 		flag.Usage()
@@ -30,7 +34,8 @@ func main() {
 	case "inspect":
 		report, err = legacy.Inspect(ctx, *path)
 	case "stage", "activate":
-		report, err = legacy.Import(ctx, *path, os.Getenv("S9A1_DATABASE_URL"), *account, *mode == "activate")
+		report, err = legacy.ImportWithUpgrade(ctx, *path, os.Getenv("S9A1_DATABASE_URL"), *account, *mode == "activate",
+			legacy.UpgradeOptions{ProjectDir: findGoProject(), Dotnet: *dotnet, Assembly: *upgrader})
 	default:
 		fmt.Fprintln(os.Stderr, "unknown mode")
 		os.Exit(2)
@@ -47,4 +52,25 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func findGoProject() string {
+	var paths []string
+	if cwd, err := os.Getwd(); err == nil {
+		paths = append(paths, cwd, filepath.Join(cwd, "go-server"))
+	}
+	if exe, err := os.Executable(); err == nil {
+		paths = append(paths, filepath.Dir(filepath.Dir(exe)))
+	}
+	for _, raw := range paths {
+		path, err := filepath.Abs(raw)
+		if err != nil {
+			continue
+		}
+		mod, err := os.ReadFile(filepath.Join(path, "go.mod"))
+		if err == nil && strings.HasPrefix(string(mod), "module s9a1/server") {
+			return path
+		}
+	}
+	return ""
 }

@@ -70,9 +70,14 @@ type Action struct {
 	Full, AssetProjection bool
 }
 type ChangeContext struct {
-	Now       time.Time
-	Delegated bool
-	Arrival   func(storage.Character, uint16) (json.RawMessage, error)
+	Now        time.Time
+	Delegated  bool
+	Arrival    func(storage.Character, uint16) (json.RawMessage, error)
+	HasNPC     func(storage.Character, NpcTarget) (bool, error)
+	Training   func(storage.Character, storage.Inventory, *Quest, TriggerRequest) (json.RawMessage, error)
+	Dungeon    *DungeonContext
+	Lease      storage.Lease
+	RankedDuel bool
 }
 
 var ErrCatalogOperations = errors.New("re-export the matched catalog with tools/export-characters.ps1")
@@ -238,7 +243,12 @@ func (catalog *Catalog) Change(c storage.Character, in storage.Inventory, receip
 	if err != nil {
 		return out, err
 	}
-	if id >= 2672 && id <= 2674 && !(op == 31 && opts.Delegated && q.Operations.DuelTraining && p.initialized && c.Level >= 50) {
+	if id >= 2672 && id <= 2674 && !((op == 31 || opts.RankedDuel) && opts.Delegated && q.Operations.DuelTraining && p.initialized && c.Level >= 50 && opts.Dungeon == nil) {
+		return out, storage.ErrInvalid
+	}
+	d := opts.Dungeon
+	mainline := q.Parent == 0 && q.Operations.Grade == "epic"
+	if d != nil && (op != 31 || !d.living(c) || !mainline && !catalog.dungeonAcceptance(c, p, in, q, receipts, d)) {
 		return out, storage.ErrInvalid
 	}
 	var doc, book map[string]json.RawMessage
@@ -288,6 +298,12 @@ func (catalog *Catalog) Change(c storage.Character, in storage.Inventory, receip
 		if err != nil {
 			return out, err
 		}
+		if d != nil && !mainline && q.Kind == clearMap {
+			v := projectionView(catalog, p, in, receipts)
+			if key := v.priorRoomEvent(q, d); key != "" {
+				a.Remaining, a.Receipts = []uint32{0}, []string{key}
+			}
+		}
 		rows[id], err = json.Marshal(a)
 		if err != nil {
 			return out, err
@@ -307,7 +323,7 @@ func (catalog *Catalog) Change(c storage.Character, in storage.Inventory, receip
 		if err != nil {
 			return out, err
 		}
-		if !wasActive && q.Kind == reach && opts.Arrival != nil {
+		if d == nil && !wasActive && q.Kind == reach && opts.Arrival != nil {
 			arrived, err := opts.Arrival(c, id)
 			if err != nil {
 				return out, err
@@ -330,12 +346,8 @@ func (catalog *Catalog) Change(c storage.Character, in storage.Inventory, receip
 	if newItem != nil {
 		in.Items = append(slices.Clone(in.Items), *newItem)
 	}
-	v := view{catalog: catalog, p: p, in: in, held: map[uint32]uint64{}, receipts: receipts}
-	for _, a := range in.Items {
-		if a.Location == 0 {
-			v.held[a.TemplateID] += uint64(a.Count)
-		}
-	}
+	v := projectionView(catalog, p, in, receipts)
+	v.inDungeon = d != nil
 	left, err := v.remaining(q, map[uint16]bool{})
 	if err != nil {
 		return out, fmt.Errorf("%w: %v", storage.ErrInvalid, err)

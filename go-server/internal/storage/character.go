@@ -80,6 +80,9 @@ func (s *Store) Create(ctx context.Context, l Lease, in CreateCharacter) (Charac
 			return Character{}, ErrPhase
 		}
 		key := nameKey(in.Name)
+		if err := lockNames(ctx, tx); err != nil {
+			return Character{}, err
+		}
 		ok, err := available(ctx, tx, key)
 		if err != nil {
 			return Character{}, err

@@ -52,6 +52,10 @@ type regularReward struct {
 	Gold                 uint32
 	Items                *[]freeItem `json:",omitempty"`
 	Luck                 *cardLuck   `json:",omitempty"`
+	Artifact             *struct {
+		Template    json.RawMessage
+		QualitySeed uint32
+	} `json:",omitempty"`
 }
 type freeItem struct {
 	Template       *material
@@ -118,6 +122,8 @@ type material struct {
 		}
 		Valid bool
 	}
+	MythologyHash              *string `json:",omitempty"`
+	MythologyOptions           byte    `json:",omitempty"`
 	RelativeLifetimeSeconds    uint32
 	DailyDeletion              bool
 	WeeklyDeletionDay          *uint8
@@ -133,6 +139,11 @@ type attributes struct {
 	ExpiresAt                               *int64
 	Locked                                  bool
 	EnchantUpgradeCount                     uint8
+	EpicExchangeInstance                    bool            `json:",omitempty"`
+	DisjointRestricted                      bool            `json:",omitempty"`
+	BanTransportStone                       bool            `json:",omitempty"`
+	InitialAmplification                    bool            `json:",omitempty"`
+	MagicSeal, Mythology                    json.RawMessage `json:",omitempty"`
 }
 
 func nonemptyGUID(s string) bool {
@@ -189,9 +200,12 @@ func grantSlot(t *material, location uint8, slot uint16) bool {
 	if t.Kind != 2 {
 		expected := uint8(0)
 		if t.Kind == 1 && t.WornSlotIsNative && t.WornSlot == 32 {
-			expected = 38
+			return location == 38 && slot <= 55
 		}
 		return location == expected && slot >= t.FirstBagSlot && slot <= t.LastBagSlot
+	}
+	if t.PetConsumable {
+		return location == 7 && slot >= 216 && slot <= 271
 	}
 	if location != 0 {
 		return false
@@ -203,53 +217,70 @@ func grantSlot(t *material, location uint8, slot uint16) bool {
 	return ok && slot == fixed
 }
 
-// Each frozen plain permanent grant retains its distinct slot kind. A common
-// template can appear in the free, special and completion plans together.
+func validFrozenItem(i specialItem, special bool) error {
+	t := i.Template
+	if t == nil || i.Attributes == nil || t.Kind < 0 || t.Kind > 2 || t.TemplateId == 0 || t.TemplateId == math.MaxUint32 ||
+		t.FirstBagSlot < 3 || t.LastBagSlot > 344 && !(t.Kind == 2 && t.FirstBagSlot == 289 && t.LastBagSlot == 360) || t.FirstBagSlot > t.LastBagSlot ||
+		t.MinimumLevel == 0 || t.UsableJobs == 0 || t.StackLimit == 0 || !hashOK(t.ResourceHash) ||
+		(t.CashPackage || t.CashPackageReward) && (t.Kind != 2 || t.ResourceExpiration == nil) ||
+		t.ResourceExpiration != nil && (*t.ResourceExpiration < 1 || *t.ResourceExpiration > math.MaxInt32 ||
+			!(t.CashPackage || t.CashPackageReward || t.PvfGiftItem)) ||
+		(t.AccountAfterFirstTrade || t.InitialSealed || t.RelativeLifetimeSeconds != 0 || t.DailyDeletion || t.WeeklyDeletionDay != nil) && !t.PvfGiftItem ||
+		t.RelativeLifetimeSeconds > math.MaxInt32 || t.WeeklyDeletionDay != nil && *t.WeeklyDeletionDay > 6 ||
+		t.FatigueTimeMonthlyDeletion && (!t.PvfGiftItem || t.Kind != 2 || t.DailyDeletion || t.WeeklyDeletionDay != nil) ||
+		t.FateCollection || t.AccountCommonInventory ||
+		t.PetConsumable && (t.Kind != 2 || t.FirstBagSlot != 216 || t.LastBagSlot != 271) ||
+		t.MythologyHash == nil && t.MythologyOptions != 0 ||
+		t.MythologyHash != nil && (t.Kind != 1 || t.MinimumLevel != 100 || !hashOK(*t.MythologyHash) ||
+			t.MythologyOptions != 3 && t.MythologyOptions != 4) ||
+		!t.WeaponQualification.Valid || t.WeaponQualification.Jobs == nil || len(t.WeaponQualification.Jobs) > 16 {
+		return errShape
+	}
+	q := t.WeaponQualification
+	if len(q.Jobs) > 0 && (!q.Verified || t.Kind != 0) {
+		return errReceipt
+	}
+	for n, j := range q.Jobs {
+		if j.Job > 15 || j.Skill == 0 || j.Skill >= 512 || n > 0 && q.Jobs[n-1].Job >= j.Job {
+			return errReceipt
+		}
+	}
+	attr := *i.Attributes
+	if t.Kind == 2 {
+		if t.WornSlot != math.MaxUint16 || t.MaximumDurability != 0 || !special && (attr.QualitySeed != 0 || attr.Durability != 0) {
+			return errReceipt
+		}
+	} else {
+		if i.Count != 1 || t.StackLimit != 1 || t.WornSlot < 12 || t.WornSlot > 32 || t.WornSlotIsNative && t.Kind == 0 ||
+			t.Kind == 1 && t.MaximumDurability == 0 && !(t.WornSlotIsNative && t.WornSlot == 32) ||
+			!special && (attr.QualitySeed == 0 || attr.QualitySeed >= 999999999 || attr.Durability > t.MaximumDurability) {
+			return errReceipt
+		}
+	}
+	if i.Count == 0 || len(i.Raw119) != 119 || i.Detail == nil || len(i.Detail) != 0 {
+		return errReceipt
+	}
+	core := make([]byte, 119)
+	for n, v := range i.Raw119 {
+		if v > 255 {
+			return errReceipt
+		}
+		core[n] = byte(v)
+	}
+	templateJSON, _ := json.Marshal(t)
+	attrJSON, _ := json.Marshal(i.Attributes)
+	if !storage.ValidDungeonHistoryCore(templateJSON, attrJSON, core, special) {
+		return errShape
+	}
+	return nil
+}
+
+// A common template can appear in the free, special and completion plans together.
 func materialTotals(items []specialItem, grants []grant) error {
 	amounts := map[uint32]int64{}
 	templates := map[uint32]*material{}
 	for _, i := range items {
 		t := i.Template
-		if t == nil || i.Attributes == nil || t.Kind < 0 || t.Kind > 2 || t.TemplateId == 0 || t.TemplateId == math.MaxUint32 ||
-			t.FirstBagSlot < 3 || t.LastBagSlot > 344 && !(t.Kind == 2 && t.FirstBagSlot == 289 && t.LastBagSlot == 360) || t.FirstBagSlot > t.LastBagSlot ||
-			t.MinimumLevel == 0 || t.UsableJobs == 0 || t.StackLimit == 0 || !hashOK(t.ResourceHash) ||
-			t.CashPackage || t.CashPackageReward || t.AccountAfterFirstTrade || t.MonsterCard || t.InitialSealed || t.ResourceExpiration != nil ||
-			t.FateCollection || t.AccountCommonInventory || t.PetConsumable || t.CharmEnergy || t.RelativeLifetimeSeconds != 0 || t.DailyDeletion || t.WeeklyDeletionDay != nil || t.FatigueTimeMonthlyDeletion ||
-			!t.WeaponQualification.Valid || t.WeaponQualification.Jobs == nil || len(t.WeaponQualification.Jobs) > 16 {
-			return errShape
-		}
-		q := t.WeaponQualification
-		if len(q.Jobs) > 0 && (!q.Verified || t.Kind != 0) {
-			return errReceipt
-		}
-		for n, j := range q.Jobs {
-			if j.Job > 15 || j.Skill == 0 || j.Skill >= 512 || n > 0 && q.Jobs[n-1].Job >= j.Job {
-				return errReceipt
-			}
-		}
-		attr := *i.Attributes
-		if t.Kind == 2 {
-			if t.WornSlot != math.MaxUint16 || t.MaximumDurability != 0 || attr.QualitySeed != 0 || attr.Durability != 0 {
-				return errReceipt
-			}
-		} else {
-			if i.Count != 1 || t.StackLimit != 1 || t.WornSlot < 12 || t.WornSlot > 32 || t.WornSlotIsNative && t.Kind == 0 ||
-				t.Kind == 1 && t.MaximumDurability == 0 && !(t.WornSlotIsNative && t.WornSlot == 32) || attr.QualitySeed == 0 || attr.QualitySeed >= 999999999 || attr.Durability > t.MaximumDurability {
-				return errReceipt
-			}
-		}
-		attr.QualitySeed, attr.Durability = 0, 0
-		if attr != (attributes{}) {
-			return errShape
-		}
-		if i.Count == 0 || len(i.Raw119) != 119 || i.Detail == nil || len(i.Detail) != 0 {
-			return errReceipt
-		}
-		for n, v := range i.Raw119 {
-			if v > 255 || v != 0 && n >= 10 && n != 11 && n != 12 {
-				return errReceipt
-			}
-		}
 		amounts[t.TemplateId] += int64(i.Count)
 		templates[t.TemplateId] = t
 	}
@@ -275,6 +306,9 @@ func allCardItems(p *specialReward, r *regularReward, completion *completion) ([
 		if i.Count > 1000000 {
 			return nil, errReceipt
 		}
+		if err := validFrozenItem(i, true); err != nil {
+			return nil, err
+		}
 	}
 	var all []specialItem
 	var equipment []uint32
@@ -298,10 +332,16 @@ func allCardItems(p *specialReward, r *regularReward, completion *completion) ([
 				}
 				equipment = append(equipment, i.Template.TemplateId)
 			}
-			all = append(all, specialItem{i.Template, count, i.Attributes, i.Raw119, i.Detail})
+			row := specialItem{i.Template, count, i.Attributes, i.Raw119, i.Detail}
+			if err := validFrozenItem(row, false); err != nil {
+				return nil, err
+			}
+			all = append(all, row)
 		}
 	}
-	if r.Policy == "PVFFreeCard/v2" && len(all) == 0 || r.Policy == "PVFFreeArtifactCard/v1" {
+	if r.Policy == "PVFFreeCard/v2" && len(all) == 0 ||
+		(r.Policy == "PVFFreeArtifactCard/v1" && r.Artifact == nil) ||
+		r.Artifact != nil && (r.Policy != "PVFFreeArtifactCard/v1" && r.Policy != "PVFFreeZeroGold/v1" || len(all) != 0) {
 		return nil, errReceipt
 	}
 	if l := r.Luck; l != nil {
@@ -324,6 +364,9 @@ func allCardItems(p *specialReward, r *regularReward, completion *completion) ([
 		for _, i := range v.Items {
 			if i.Template == nil || i.Count == 0 || i.Count > i.Template.StackLimit {
 				return nil, errReceipt
+			}
+			if err := validFrozenItem(i, true); err != nil {
+				return nil, err
 			}
 			total += uint64(i.Count)
 		}
@@ -356,7 +399,9 @@ func claims(c storage.Character, all map[string]json.RawMessage, day int64, dung
 		}
 		p := input.SpecialReward
 		g := input.Reward
-		if p == nil || g == nil || input.Version != "local100-free-special/v1" || !nonemptyGUID(input.Owner) || !nonemptyGUID(input.RunId) || input.Epoch <= 0 || input.Member != 0 || input.CharacterId != c.ID {
+		if p == nil || g == nil || input.Version != "local100-free-special/v1" &&
+			(input.Version != "local100-free-artifact-v1" || g.Artifact == nil) ||
+			!nonemptyGUID(input.Owner) || !nonemptyGUID(input.RunId) || input.Epoch <= 0 || input.Member != 0 || input.CharacterId != c.ID {
 			return nil, errReceipt
 		}
 		actual := p.DungeonId
@@ -368,8 +413,14 @@ func claims(c storage.Character, all map[string]json.RawMessage, day int64, dung
 		}
 		if actual != dungeon || p.Policy != policies[dungeon] || !hashOK(p.ResourceHash) || p.Day != day || p.Limit == 0 || p.Limit > 32 || int(p.Ordinal) != n || p.Ordinal > p.Limit || p.Container == 0 ||
 			len(p.Items) == 0 || len(p.Items) > 16 || strings.TrimSpace(g.Policy) == "" || len(utf16.Encode([]rune(g.Policy))) > 512 || !hashOK(g.ResourceHash) ||
-			(g.Gold == 0) != (g.Policy == "PVFFreeZeroGold/v1") || len(r.SpecialGrants) != 0 {
+			(g.Gold == 0) != (g.Policy == "PVFFreeZeroGold/v1") ||
+			g.Artifact == nil && len(r.SpecialGrants) != 0 {
 			return nil, errReceipt
+		}
+		if g.Artifact != nil {
+			if err := storage.VerifyDungeonCardArtifact(g.Artifact.Template, g.Artifact.QualitySeed, r.SpecialGrants); err != nil {
+				return nil, errReceipt
+			}
 		}
 		identity := fmt.Sprintf("%s:%d:%d:%s", strings.ReplaceAll(input.Owner, "-", ""), input.Epoch, c.ID, strings.ReplaceAll(input.RunId, "-", ""))
 		if input.ResultKey != "dungeon-settlement:v1:"+identity+":result" {
@@ -452,8 +503,7 @@ func Body(c storage.Character, receipts map[string]json.RawMessage, limits map[u
 	if len(limits) > 5 {
 		return nil, errReceipt
 	}
-	d := now.UTC().Add(2 * time.Hour)
-	day := int64(d.Year()*10000 + int(d.Month())*100 + d.Day())
+	day := Day(now)
 	if day < 20000101 {
 		return nil, errReceipt
 	}
@@ -473,22 +523,38 @@ func Body(c storage.Character, receipts map[string]json.RawMessage, limits map[u
 			out = append(out, base)
 			continue
 		}
-		limit := int(base)
-		claims, err := claims(c, receipts, day, k)
+		used, limit, err := Allowance(c, receipts, day, k, base)
 		if err != nil {
 			return nil, err
 		}
-		if k == ghent {
-			limit, err = withCredits(c, receipts, day, base, claims)
-			if err != nil {
-				return nil, err
-			}
-		}
-		if len(claims) > limit {
-			return nil, errReceipt
-		}
 		out = binary.LittleEndian.AppendUint32(out, k)
-		out = append(out, byte(limit-len(claims)))
+		out = append(out, limit-used)
 	}
 	return out, nil
+}
+
+func Day(now time.Time) int64 {
+	d := now.UTC().Add(2 * time.Hour)
+	return int64(d.Year()*10000 + int(d.Month())*100 + d.Day())
+}
+
+func Allowance(c storage.Character, receipts map[string]json.RawMessage, day int64, dungeon uint32, base byte) (used, limit byte, err error) {
+	if c.ID == 0 || day < 20000101 || policies[dungeon] == "" || base == 0 || base > 32 {
+		return 0, 0, errReceipt
+	}
+	rows, err := claims(c, receipts, day, dungeon)
+	if err != nil {
+		return 0, 0, err
+	}
+	maximum := int(base)
+	if dungeon == ghent {
+		maximum, err = withCredits(c, receipts, day, base, rows)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+	if len(rows) > maximum {
+		return 0, 0, errReceipt
+	}
+	return byte(len(rows)), byte(maximum), nil
 }

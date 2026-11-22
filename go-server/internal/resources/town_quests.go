@@ -124,6 +124,24 @@ func (t *TownCatalog) hasNPC(q rangeQuest, level byte, s TownQuests, p TownPoint
 	})
 }
 
+// HasQuestNPC requires the frozen NPC placement in the current effective town scene.
+func (t *TownCatalog) HasQuestNPC(level byte, s TownQuests, p TownPoint, id uint32, town, area, x, y uint16) bool {
+	if x > math.MaxInt16 || y > math.MaxInt16 {
+		return false
+	}
+	var q rangeQuest
+	n := &struct {
+		NpcId            uint32
+		Town, Area, X, Y uint16
+		Visibility       *struct {
+			Quest        uint16
+			ResourceHash string
+		}
+	}{NpcId: id, Town: town, Area: area, X: x, Y: y}
+	q.NpcRangeTarget = n
+	return t.hasNPC(q, level, s, p)
+}
+
 // Arrival updates only matching original objective fields, inside the same position write.
 // Raw subtrees keep imported extensions, wide integer IDs and other players' quest history intact.
 func (t *TownCatalog) Arrival(gameplay json.RawMessage, level byte, s TownQuests, p TownPoint) (json.RawMessage, error) {

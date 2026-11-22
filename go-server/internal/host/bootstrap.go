@@ -13,6 +13,7 @@ import (
 	"s9a1/server/internal/mailwire"
 	"s9a1/server/internal/opening"
 	"s9a1/server/internal/protocol"
+	"s9a1/server/internal/resources"
 	"s9a1/server/internal/rewardcount"
 	"s9a1/server/internal/storage"
 )
@@ -49,8 +50,16 @@ func (g *game) questMenu(ctx context.Context, c storage.Character, in storage.In
 	return out, nil
 }
 func (g *game) specialCounters(ctx context.Context, c storage.Character) error {
+	return g.projectSpecialCounters(ctx, c, 0)
+}
+
+func (g *game) projectSpecialCounters(ctx context.Context, c storage.Character, announcement uint32) error {
 	if !g.server.delegated || duellobby.IsChannel(g.channel) {
 		return nil
+	}
+	profile, err := readGameplay(c.Gameplay)
+	if err != nil || !profile.Initialized {
+		return err
 	}
 	now := time.Now()
 	receipts, err := g.server.DB.DailyRewardReceipts(ctx, g.lease, now)
@@ -58,10 +67,56 @@ func (g *game) specialCounters(ctx context.Context, c storage.Character) error {
 		return err
 	}
 	body, err := rewardcount.Body(c, receipts, g.server.Characters.DailyLimits, now)
-	if err != nil || len(body) == 0 {
+	if err != nil {
 		return err
 	}
-	return g.send(0, 1734, body)
+	var frames []opening.Packet
+	if g.channel == 63 {
+		counts, _, used, err := g.server.DB.OculusCountsView(ctx, g.lease, c, now)
+		if err != nil {
+			return err
+		}
+		weekly := g.server.Characters.Dungeons.OculusCards
+		if len(weekly) != 0 {
+			if len(weekly) != 3 {
+				return storage.ErrInvalid
+			}
+			if len(body) == 0 {
+				body = []byte{0}
+			}
+			for _, id := range [...]uint32{100000007, 100002669, 400000389} {
+				d := weekly[id]
+				if d.DungeonId != id || d.CounterDungeonId != 100000007 || d.Limit != 1 || d.CycleRaw != 1 {
+					return storage.ErrInvalid
+				}
+				remaining := d.Limit
+				if used {
+					remaining--
+				}
+				body[0]++
+				body = binary.LittleEndian.AppendUint32(body, id)
+				body = append(body, remaining)
+			}
+		}
+		frames = append(frames, opening.Packet{Opcode: 1769, Body: oculusCounters(counts)})
+	}
+	if len(body) > 0 {
+		if err := g.send(0, 1734, body); err != nil {
+			return err
+		}
+	}
+	if err := g.packets(frames); err != nil || announcement == 0 {
+		return err
+	}
+	if source, ok := g.server.Characters.Dungeons.SpecialRewards[announcement]; ok {
+		announcement = source.Counter
+	}
+	for at := 1; at+5 <= len(body); at += 5 {
+		if binary.LittleEndian.Uint32(body[at:]) == announcement {
+			return g.specialCardMessage(announcement, body[at+4])
+		}
+	}
+	return nil
 }
 func definitionProof(d opening.Definition) storage.TutorialDefinition {
 	p := d.ReturnPoint
@@ -102,7 +157,23 @@ func (g *game) syncTown(ctx context.Context, op uint16, body []byte) error {
 	if err != nil {
 		return err
 	}
-	pending := profile.Tutorial != nil && !profile.Tutorial.Completed
+	oculus := g.channel == 63
+	var projectedPosition storage.Position
+	if oculus {
+		recruit, ok := g.oculusPoint(0, 1)
+		quests, err := resources.ReadTownQuests(c.Gameplay)
+		if err != nil {
+			return err
+		}
+		if !ok || !oculusEligible(c, profile.Initialized, quests) {
+			return storage.ErrPhase
+		}
+		projectedPosition = recruit
+		if g.oculus.position != nil {
+			projectedPosition = *g.oculus.position
+		}
+	}
+	pending := !oculus && profile.Tutorial != nil && !profile.Tutorial.Completed
 	var def opening.Definition
 	if pending {
 		var exists bool
@@ -117,7 +188,7 @@ func (g *game) syncTown(ctx context.Context, op uint16, body []byte) error {
 	if g.opening != nil {
 		return g.openingRequest(ctx, op, body)
 	}
-	if g.channel != 19 {
+	if g.channel != 19 && !oculus {
 		return storage.ErrPhase
 	}
 	ack := []byte{0, 0}
@@ -139,7 +210,11 @@ func (g *game) syncTown(ctx context.Context, op uint16, body []byte) error {
 	if err != nil {
 		return err
 	}
-	a, p, err := readActor(c, g.channel)
+	display := c
+	if oculus {
+		display.Position = projectedPosition
+	}
+	a, p, err := readActor(display, g.channel)
 	if err != nil {
 		return err
 	}
@@ -181,8 +256,13 @@ func (g *game) syncTown(ctx context.Context, op uint16, body []byte) error {
 				return err
 			}
 		}
+		g.stampBuffProjection(c, in)
 		g.gaugePending = true
-		return nil
+		g.trackDungeonLuck()
+		if oculus {
+			return nil
+		}
+		return g.autoCompleteDeliveryChildren(ctx)
 	}
 	load, err := g.loadingPackets(ctx, r, c, in, a, p, op, ack, pending)
 	if err != nil {
@@ -191,10 +271,20 @@ func (g *game) syncTown(ctx context.Context, op uint16, body []byte) error {
 	if err = g.packets(load.beforeCounts); err != nil {
 		return err
 	}
+	if oculus {
+		g.oculus.position = &projectedPosition
+	}
+	if err = g.observeTownMailbox(c); err != nil {
+		return err
+	}
 	if err = g.specialCounters(ctx, c); err != nil {
 		return err
 	}
 	if err = g.packets(load.afterCounts); err != nil {
+		return err
+	}
+	g.crystal = crystalProjection{loaded: true, inTown: true, active: g.contracts[2] > time.Now().Unix(), selection: p.CrystalContractSelection}
+	if err = g.showPurchasedCodes(in.AccountPurchases); err != nil {
 		return err
 	}
 	g.battlePassSent = true
@@ -233,11 +323,7 @@ type loadPackets struct{ beforeCounts, afterCounts []opening.Packet }
 
 func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.Character, in storage.Inventory, a protocol.Actor, p actorProfile, op uint16, ack []byte, pending bool) (loadPackets, error) {
 	var result loadPackets
-	ordinary, special, err := inventorywire.Town(in, c, inventorywire.Options{Now: time.Now(), CashPolicies: g.server.Characters.CashPolicies})
-	if err != nil {
-		return result, err
-	}
-	eventContainers, err := inventorywire.FateContainers(in, c)
+	ordinary, special, err := inventorywire.Town(in, c, inventorywire.Options{Now: time.Now(), CashPolicies: g.server.Characters.CashPolicies, AccountPurchases: in.AccountPurchases})
 	if err != nil {
 		return result, err
 	}
@@ -245,7 +331,7 @@ func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.C
 	if err != nil {
 		return result, err
 	}
-	m0, err := protocol.Mode0(a, g.server.native140)
+	m0, err := g.actorMode0(a)
 	if err != nil {
 		return result, err
 	}
@@ -272,7 +358,7 @@ func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.C
 		}
 	}
 	if op == 120 && g.server.Characters.Fate != nil {
-		notice(108, fateEvents())
+		notice(108, g.fateEvents(time.Now()))
 	}
 	*dst = append(*dst, opening.Packet{Class: 1, Opcode: op, Body: ack})
 	notice(376, []byte{0, 0, 0})
@@ -299,23 +385,32 @@ func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.C
 	group(quests)
 	notice(376, locks)
 	notice(19, skills)
-	replacement := make([]byte, 6)
-	replacement[0] = p.ClassReplacementCount
-	if a.GrowType > 5 {
-		replacement[1] = 50
+	if g.channel != 63 {
+		replacement := make([]byte, 6)
+		replacement[0] = p.ClassReplacementCount
+		if a.GrowType > 5 {
+			replacement[1] = 50
+		}
+		notice(1141, replacement)
 	}
-	notice(1141, replacement)
 	notice(938, []byte{p.GoldExpansion})
-	notice(1929, make([]byte, 4))
+	if g.channel != 63 {
+		notice(1929, binary.LittleEndian.AppendUint32(nil, uint32(in.UniqueAvatarGauge)))
+	}
 	dst = &result.afterCounts
 	if !g.battlePassSent {
-		info := make([]byte, 21)
-		info[4] = 1
-		notice(1850, info)
-		notice(1852, make([]byte, 28))
+		battlePass, err := g.battlePassPackets(ctx, true)
+		if err != nil {
+			return result, err
+		}
+		*dst = append(*dst, battlePass...)
 	}
 	notice(889, []byte{0, p.CrystalContractSelection})
-	if f := g.server.Characters.Fate; f != nil {
+	if f := g.server.Characters.Fate; f != nil && g.channel != 63 {
+		eventContainers, err := inventorywire.FateContainers(in, c)
+		if err != nil {
+			return result, err
+		}
 		group(eventContainers)
 		b, err := fateState(p, f.StoryCapacity, f.SinCosts, time.Now())
 		if err != nil {
@@ -326,11 +421,30 @@ func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.C
 	return result, nil
 }
 
-func fateEvents() []byte {
-	b := make([]byte, 33)
-	binary.LittleEndian.PutUint16(b, 2)
-	binary.LittleEndian.PutUint16(b[2:], 4171)
-	binary.LittleEndian.PutUint16(b[17:], 2554)
+func (g *game) fateEvents(now time.Time) []byte {
+	var endsAt uint32
+	if quests := g.server.Characters.Quests; quests != nil && quests.BattlePass.Active(now) {
+		endsAt = uint32(quests.BattlePass.Definition.Schedule.EndsAt)
+	}
+	return eventVisibility(endsAt)
+}
+
+func eventVisibility(passEndsAt uint32) []byte {
+	events := []uint16{4171, 2554}
+	if passEndsAt != 0 {
+		events = []uint16{4171, 2520, 2554}
+	}
+	b := make([]byte, 3+15*len(events))
+	binary.LittleEndian.PutUint16(b, uint16(len(events)))
+	for i, event := range events {
+		binary.LittleEndian.PutUint16(b[2+15*i:], event)
+	}
+	if passEndsAt != 0 {
+		b[len(b)-1] = 1
+		b = binary.LittleEndian.AppendUint16(b, 2520)
+		b = binary.LittleEndian.AppendUint32(b, passEndsAt)
+		b = append(b, make([]byte, 44)...)
+	}
 	return b
 }
 

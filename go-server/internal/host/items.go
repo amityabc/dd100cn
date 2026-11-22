@@ -15,18 +15,29 @@ func (g *game) moveItem(ctx context.Context, f protocol.Frame) error {
 	if err != nil {
 		return err
 	}
+	if storage.SpecialMoveRoute(req) {
+		return g.moveSpecialItem(ctx, req, f.Body)
+	}
+	container := func(list byte) bool { return list == 2 || list == 7 || list == 12 || list == 38 }
+	if container(req.SourceList) || container(req.DestinationList) ||
+		req.SourceList == 0 && req.SourceSlot >= 363 && req.SourceSlot <= 374 ||
+		req.DestinationList == 0 && req.DestinationSlot >= 363 && req.DestinationSlot <= 374 {
+		return g.moveContainerItem(ctx, req, f.Body)
+	}
 	r, err := g.server.DB.Snapshot(ctx, g.lease)
 	if err != nil {
 		return err
 	}
-	if r.Phase != storage.TownReady || r.SelectedID == 0 || g.channel != 19 || g.opening != nil && !g.opening.Ready() {
+	run := g.ordinary.Run
+	if r.Phase != storage.TownReady || r.SelectedID == 0 || g.channel != 19 || g.ordinary.Returning() ||
+		g.opening != nil && !g.opening.Ready() || run != nil && (run.Character != r.SelectedID || !run.CanChangeEquipment()) {
 		return g.send(1, 19, inventorymove.Rejected(req))
 	}
 	c, err := selected(r)
 	if err != nil {
 		return err
 	}
-	if g.opening != nil {
+	if g.opening != nil || run != nil {
 		p, err := readGameplay(c.Gameplay)
 		if err != nil {
 			return err
@@ -53,10 +64,10 @@ func (g *game) moveItem(ctx context.Context, f protocol.Frame) error {
 	if err = g.projected(ordinary); err != nil {
 		return err
 	}
-	if g.opening != nil {
+	if g.opening != nil || run != nil {
 		return nil
 	}
-	a, p, err := readActor(out.Character, g.channel)
+	a, _, err := readActor(out.Character, g.channel)
 	if err != nil {
 		return err
 	}
@@ -68,20 +79,11 @@ func (g *game) moveItem(ctx context.Context, f protocol.Frame) error {
 		return err
 	}
 	if out.SourceList == 3 && out.SourceSlot == 12 || out.DestinationList == 3 && out.DestinationSlot == 12 {
-		b, err = protocol.Mode0(a, g.server.native140)
+		b, err = g.actorMode0(a)
 		if err != nil {
 			return err
 		}
 		if err = g.send(0, 2, b); err != nil {
-			return err
-		}
-	}
-	if p.BuffRegistration != nil && len(p.BuffRegistration.Items) > 0 {
-		buff, err := buffReset(p, out.Inventory)
-		if err != nil {
-			return err
-		}
-		if err = g.send(0, 1360, buff[2:]); err != nil {
 			return err
 		}
 	}

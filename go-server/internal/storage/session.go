@@ -48,7 +48,7 @@ func (s *Store) ValidateLease(ctx context.Context, l Lease) error {
 // A roster read holds a shared lock so its settings and characters agree.
 func lockAccount(ctx context.Context, tx *sql.Tx, l Lease, write bool) (Roster, error) {
 	q := `SELECT phase,coalesce(selected_id,0),capacity,cera,cargo_gold,asset_revision,game_options,hotkeys,
-		conqueror_expires_at,skill_master_expires_at,crystal_expires_at,growth_expires_at
+		conqueror_expires_at,skill_master_expires_at,crystal_expires_at,growth_expires_at,treasure_gauge,unique_avatar_gauge
 		FROM s9a1.accounts WHERE account=$1 AND owner=$2::uuid AND epoch=$3 AND phase<>5 `
 	if write {
 		q += "FOR UPDATE"
@@ -57,7 +57,7 @@ func lockAccount(ctx context.Context, tx *sql.Tx, l Lease, write bool) (Roster, 
 	}
 	var r Roster
 	err := tx.QueryRowContext(ctx, q, l.Account, l.Owner, l.Epoch).Scan(&r.Phase, &r.SelectedID, &r.Capacity, &r.Cera, &r.CargoGold, &r.AssetRevision, &r.GameOptions, &r.Hotkeys,
-		&r.ConquerorExpiresAt, &r.SkillMasterExpiresAt, &r.CrystalExpiresAt, &r.GrowthExpiresAt)
+		&r.ConquerorExpiresAt, &r.SkillMasterExpiresAt, &r.CrystalExpiresAt, &r.GrowthExpiresAt, &r.TreasureGauge, &r.UniqueAvatarGauge)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Roster{}, ErrLease
 	}

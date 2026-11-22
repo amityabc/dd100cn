@@ -39,6 +39,27 @@ var dailyReceiptsSQL string
 //go:embed town_transition.sql
 var townTransitionSQL string
 
+//go:embed commerce_history.sql
+var commerceHistorySQL string
+
+//go:embed battle_pass.sql
+var battlePassSQL string
+
+//go:embed treasure_gauge.sql
+var treasureGaugeSQL string
+
+//go:embed unique_avatar_gauge.sql
+var uniqueAvatarGaugeSQL string
+
+//go:embed character_services.sql
+var characterServicesSQL string
+
+//go:embed fate_exchange.sql
+var fateExchangeSQL string
+
+//go:embed oculus_bindings.sql
+var oculusBindingsSQL string
+
 var (
 	ErrLease         = errors.New("session no longer owns this account")
 	ErrPhase         = errors.New("operation is unavailable in this phase")
@@ -101,11 +122,21 @@ type Roster struct {
 	Phase                                                                       Phase
 	Capacity                                                                    uint8
 	Cera, CargoGold, AssetRevision                                              int64
+	TreasureGauge                                                               uint32
+	UniqueAvatarGauge                                                           uint16
 	ConquerorExpiresAt, SkillMasterExpiresAt, CrystalExpiresAt, GrowthExpiresAt int64
 	GameOptions, Hotkeys                                                        []byte
 }
 
-type Store struct{ db *sql.DB }
+type Store struct {
+	db                   *sql.DB
+	battlePass           BattlePassUpdater
+	dailyExpiryTemplates map[uint32]json.RawMessage
+}
+
+func (s *Store) BindDailyExpiry(templates map[uint32]json.RawMessage) {
+	s.dailyExpiryTemplates = templates
+}
 
 func Open(ctx context.Context, dsn string) (*Store, error) {
 	if dsn == "" {
@@ -139,7 +170,7 @@ func (s *Store) Initialize(ctx context.Context) error {
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return struct{}{}, err
 		}
-		migrations := []string{schemaSQL, assetsSQL, premiumSQL, movesSQL, openingSQL, openingCombatSQL, dailyReceiptsSQL, townTransitionSQL}
+		migrations := schemaMigrations()
 		if version < 0 || version > len(migrations) {
 			return struct{}{}, fmt.Errorf("unsupported PostgreSQL schema version %d", version)
 		}

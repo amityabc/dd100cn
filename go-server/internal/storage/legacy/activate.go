@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"s9a1/server/internal/storage"
 )
 
 // Activation has a narrower contract than preserving a snapshot. A player
@@ -13,7 +15,7 @@ import (
 // online as an empty character.
 func (s *source) activationIssues(ctx context.Context) error {
 	r := &s.report
-	if r.ModuleVersion != 35 {
+	if r.ModuleVersion != latestLocalEntry {
 		r.ActivationIssues = append(r.ActivationIssues, fmt.Sprintf("local-entry v%d requires the historical upgrade to v35 on a copy", r.ModuleVersion))
 		return nil
 	}
@@ -26,6 +28,10 @@ func (s *source) activationIssues(ctx context.Context) error {
 			known = accountCols
 		case "local_account_premium":
 			known = "account premium_type expires_at"
+		case "local_account_character_services":
+			known = "account slot expires_at"
+		case "local_account_battle_pass":
+			known = "account state_json"
 		case "local_entry_characters":
 			known = charCols
 		case "local_character_receipts":
@@ -38,6 +44,10 @@ func (s *source) activationIssues(ctx context.Context) error {
 			known = "account instance_id template_json count slot attributes_json raw119 detail"
 		case "local_asset_sequences":
 			known = "name next"
+		case "local_cash_purchases":
+			known = "account restriction_id period_start count"
+		case "local_fate_exchange_purchases":
+			known = "account event_id product_id period period_key purchased buyer_character_id account_revision character_revision receipt_key receipt_input_json receipt_result_json receipt_grants_json"
 		case "local_name_reservations":
 			known = "name_key character_id expires_at"
 		case "next_schema_metadata", "next_schema_modules", "sqlite_sequence":
@@ -55,12 +65,11 @@ func (s *source) activationIssues(ctx context.Context) error {
 		}
 	}
 	checks := []struct{ message, query string }{
-		{"account has non-default treasure, avatar or Oculus state", `SELECT EXISTS(SELECT 1 FROM local_entry_accounts WHERE treasure_gauge<>0 OR unique_avatar_gauge<>0 OR json_array_length(oculus_guide_bindings_json)<>0)`},
+		{"account unique avatar gauge exceeds its native bounds", `SELECT EXISTS(SELECT 1 FROM local_entry_accounts WHERE unique_avatar_gauge<0 OR unique_avatar_gauge>1000)`},
+		{"account treasure gauge exceeds its native signed 32-bit field", `SELECT EXISTS(SELECT 1 FROM local_entry_accounts WHERE treasure_gauge<0 OR treasure_gauge>2147483647)`},
 		{"account Cera exceeds the native signed 32-bit wallet", `SELECT EXISTS(SELECT 1 FROM local_entry_accounts WHERE cera<0 OR cera>2147483647)`},
-		{"special avatar, pet or artifact needs its full native projection", `SELECT EXISTS(SELECT 1 FROM local_entry_characters WHERE coalesce(json_array_length(gameplay_json,'$.SpecialAssets.Items'),0)<>0)`},
 		{"parked asset requires its original owning transaction", `SELECT EXISTS(SELECT 1 FROM local_weapon_assets WHERE location=255) OR EXISTS(SELECT 1 FROM local_item_assets WHERE location=255)`},
-		{"character has a pending rename", `SELECT EXISTS(SELECT 1 FROM local_entry_characters WHERE coalesce(json_extract(gameplay_json,'$.CharacterRename.PendingSource'),0)<>0)`},
-		{"pet serial allocator is already in use", `SELECT EXISTS(SELECT 1 FROM local_asset_sequences WHERE name<>'pet_serial' OR next<>1)`},
+		{"unknown legacy asset allocator", `SELECT EXISTS(SELECT 1 FROM local_asset_sequences WHERE name<>'pet_serial')`},
 		{"character appears without its receipt row", `SELECT EXISTS(SELECT 1 FROM local_entry_characters c LEFT JOIN local_character_receipts r ON r.character_id=c.id WHERE r.character_id IS NULL)`},
 	}
 	for _, check := range checks {
@@ -71,6 +80,36 @@ func (s *source) activationIssues(ctx context.Context) error {
 		if found {
 			r.ActivationIssues = append(r.ActivationIssues, check.message)
 		}
+	}
+	var bindings []byte
+	if err := s.tx.QueryRowContext(ctx, "SELECT oculus_guide_bindings_json FROM local_entry_accounts WHERE account='local'").Scan(&bindings); err != nil {
+		return err
+	}
+	if err := storage.ValidateOculusBindings(bindings); err != nil {
+		r.ActivationIssues = append(r.ActivationIssues, "account has invalid Oculus guide bindings")
+	}
+	if err := s.checkAssetIdentities(ctx); err != nil {
+		return err
+	}
+	renames, err := s.tx.QueryContext(ctx, `SELECT id,gameplay_json FROM local_entry_characters WHERE json_type(gameplay_json,'$.CharacterRename')='object'`)
+	if err != nil {
+		return err
+	}
+	for renames.Next() {
+		var id int64
+		var raw []byte
+		if err = renames.Scan(&id, &raw); err != nil {
+			renames.Close()
+			return err
+		}
+		if storage.ValidateRenameProfile(raw) != nil {
+			r.ActivationIssues = append(r.ActivationIssues, fmt.Sprintf("character %d has invalid saved rename state", id))
+		}
+	}
+	err = renames.Err()
+	renames.Close()
+	if err != nil {
+		return err
 	}
 	fk, err := s.tx.QueryContext(ctx, "PRAGMA foreign_key_check")
 	if err != nil {
@@ -83,7 +122,7 @@ func (s *source) activationIssues(ctx context.Context) error {
 	return fk.Err()
 }
 
-func (s *source) activate(ctx context.Context, db *sql.DB, account string) error {
+func (s *source) activate(ctx context.Context, db *sql.DB, account, originalDigest string) error {
 	if len(s.report.ActivationIssues) > 0 {
 		return errors.New("staged only: " + strings.Join(s.report.ActivationIssues, "; "))
 	}
@@ -93,7 +132,7 @@ func (s *source) activate(ctx context.Context, db *sql.DB, account string) error
 	}
 	defer tx.Rollback()
 	var active bool
-	err = tx.QueryRowContext(ctx, "SELECT active FROM s9a1_import.snapshots WHERE digest=$1 AND target=$2 FOR UPDATE", s.report.SHA256, account).Scan(&active)
+	err = tx.QueryRowContext(ctx, "SELECT active FROM s9a1_import.snapshots WHERE digest=$1 AND target=$2 FOR UPDATE", originalDigest, account).Scan(&active)
 	if err != nil {
 		return err
 	}
@@ -101,10 +140,11 @@ func (s *source) activate(ctx context.Context, db *sql.DB, account string) error
 		s.report.Activated = true
 		return nil
 	}
-	var epoch, cera, cargo, revision, expansion int64
+	var epoch, cera, cargo, revision, expansion, treasure, avatarGauge int64
 	var opts, keys []byte
-	err = s.tx.QueryRowContext(ctx, `SELECT epoch,cera,cargo_gold,asset_revision,character_slot_expansion,game_options,hotkeys
-		FROM local_entry_accounts WHERE account='local'`).Scan(&epoch, &cera, &cargo, &revision, &expansion, &opts, &keys)
+	var bindings string
+	err = s.tx.QueryRowContext(ctx, `SELECT epoch,cera,cargo_gold,asset_revision,character_slot_expansion,game_options,hotkeys,treasure_gauge,unique_avatar_gauge,oculus_guide_bindings_json
+		FROM local_entry_accounts WHERE account='local'`).Scan(&epoch, &cera, &cargo, &revision, &expansion, &opts, &keys, &treasure, &avatarGauge, &bindings)
 	if err != nil {
 		return err
 	}
@@ -116,8 +156,8 @@ func (s *source) activate(ctx context.Context, db *sql.DB, account string) error
 	if keys == nil {
 		keys = []byte{}
 	}
-	result, err := tx.ExecContext(ctx, `INSERT INTO s9a1.accounts (account,epoch,cera,cargo_gold,asset_revision,capacity,game_options,hotkeys)
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(account) DO NOTHING`, account, epoch, cera, cargo, revision, 32+expansion, opts, keys)
+	result, err := tx.ExecContext(ctx, `INSERT INTO s9a1.accounts (account,epoch,cera,cargo_gold,asset_revision,capacity,game_options,hotkeys,treasure_gauge,unique_avatar_gauge,oculus_guide_bindings_json)
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb) ON CONFLICT(account) DO NOTHING`, account, epoch, cera, cargo, revision, 32+expansion, opts, keys, treasure, avatarGauge, bindings)
 	if err != nil {
 		return err
 	}
@@ -127,6 +167,12 @@ func (s *source) activate(ctx context.Context, db *sql.DB, account string) error
 	}
 	if n != 1 {
 		return errors.New("target account already exists, activation would overwrite its state")
+	}
+	if err = s.copyCharacterServiceDeadlines(ctx, tx, account); err != nil {
+		return err
+	}
+	if err = s.copyFateExchange(ctx, tx, account, revision); err != nil {
+		return err
 	}
 	if _, err = tx.ExecContext(ctx, "SELECT next_id FROM s9a1.character_id_allocator WHERE singleton FOR UPDATE"); err != nil {
 		return err
@@ -204,7 +250,7 @@ func (s *source) activate(ctx context.Context, db *sql.DB, account string) error
 	if count != s.report.Characters || gold != s.report.Gold {
 		return errors.New("activated character count or gold total differs from the source")
 	}
-	if _, err = tx.ExecContext(ctx, "UPDATE s9a1_import.snapshots SET active=true WHERE digest=$1", s.report.SHA256); err != nil {
+	if _, err = tx.ExecContext(ctx, "UPDATE s9a1_import.snapshots SET active=true WHERE digest=$1", originalDigest); err != nil {
 		return err
 	}
 	if err = tx.Commit(); err != nil {

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LegacyOutput Condition="'$(LegacyOutput)' == ''">$(MSBuildThisFileDirectory)../../../baseline/.work/source/Server/artifacts/bin/Serve100.Host/release</LegacyOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Serve100.Infrastructure" HintPath="$(LegacyOutput)/Serve100.Infrastructure.dll" />
+    <Reference Include="Serve100.Game" HintPath="$(LegacyOutput)/Serve100.Game.dll" />
+    <Reference Include="Microsoft.Data.Sqlite" HintPath="$(LegacyOutput)/Microsoft.Data.Sqlite.dll" />
+    <Reference Include="SQLitePCLRaw.batteries_v2" HintPath="$(LegacyOutput)/SQLitePCLRaw.batteries_v2.dll" />
+    <Reference Include="SQLitePCLRaw.core" HintPath="$(LegacyOutput)/SQLitePCLRaw.core.dll" />
+    <Reference Include="SQLitePCLRaw.provider.e_sqlite3" HintPath="$(LegacyOutput)/SQLitePCLRaw.provider.e_sqlite3.dll" />
+    <Content Include="$(LegacyOutput)/runtimes/**/*" Link="runtimes/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -80,15 +80,22 @@ func declaredLength(header []byte, t Transport, minimum, maximum int) (int, erro
 
 // ReadFrame consumes exactly one frame, irrespective of TCP chunk boundaries.
 func ReadFrame(r io.Reader, t Transport, d Direction) (Frame, error) {
+	return ReadFrameLimited(r, t, d, MaximumFrameBytes)
+}
+
+func ReadFrameLimited(r io.Reader, t Transport, d Direction, limit int) (Frame, error) {
 	size, maximum, err := frameLimits(t, d)
 	if err != nil {
 		return Frame{}, err
+	}
+	if limit < size {
+		return Frame{}, fmt.Errorf("configured frame limit %d below header size %d", limit, size)
 	}
 	var header [16]byte
 	if _, err := io.ReadFull(r, header[:size]); err != nil {
 		return Frame{}, err
 	}
-	n, err := declaredLength(header[:size], t, size, maximum)
+	n, err := declaredLength(header[:size], t, size, min(maximum, limit))
 	if err != nil {
 		return Frame{}, err
 	}

@@ -6,6 +6,30 @@ using Serve100.Infrastructure.Resources;
 if (args is ["--routes", var isolatedRoot, var legacyOutput, var routeFile])
     return await RouteExport.Run(isolatedRoot, legacyOutput, routeFile);
 
+if (args is ["--gm", var gmPvf, var gmProfile, var gmOutput])
+    return GmExport.Run(gmPvf, gmProfile, gmOutput);
+
+if (args is ["--dungeon-coverage", var dungeonPvf, var dungeonProfile])
+    return DungeonExport.Audit(dungeonPvf, dungeonProfile);
+
+if (args is ["--wisdom-vectors", var refPvf, var refProfile, var refOutput])
+{
+    using var provider = new PvfResourceProvider(Path.GetFullPath(refPvf), Path.GetFullPath(refProfile), stableSource: true);
+    var refItems = new LocalPvfItemTemplates(provider);
+    var refBoss = new LocalOculusBossEquipmentCatalog(provider, refItems);
+    var refWisdom = new LocalWisdomEquipmentCatalog(provider, refItems, refBoss);
+    refWisdom.Prepare();
+    var vectors = new SortedDictionary<byte,object>();
+    for (uint seed = 0; seed < 100000 && vectors.Count < 4; seed++)
+    {
+        var plan = refWisdom.Plan(seed);
+        vectors.TryAdd(plan.Pool, new { Seed = seed, Plan = plan });
+    }
+    if (vectors.Count != 4) throw new InvalidDataException("Missing Wisdom reward pool");
+    File.WriteAllText(refOutput, JsonSerializer.Serialize(vectors.Values));
+    return 0;
+}
+
 if (args.Length != 3)
 {
     Console.Error.WriteLine("Usage: CatalogExport <Script.pvf> <Client100Profile.json> <output-file>");
@@ -61,8 +85,14 @@ commerce.Prepare();
 var fate = new LocalFateCatalog(resources);
 fate.Prepare();
 var items = new LocalPvfItemTemplates(resources);
+var rename = new LocalPvfCharacterRenameCatalog(resources);
+rename.Prepare();
+items.RegisterGiftTemplates(rename.Templates);
 var weights = new LocalPlayerMailPolicy(resources,items);
-var ids = commerce.TemplateIds.Concat(quests.RewardTemplateIds).Concat(quests.MaterialTemplateIds).Distinct().Order().ToArray();
+var ids = commerce.TemplateIds.Concat(quests.RewardTemplateIds).Concat(quests.MaterialTemplateIds).Append(LocalWisdomRules.Ticket)
+    .Concat(LocalRubyTreasure.BoxIds).Append(10319994u)
+    .Concat(rename.Templates.Select(t=>t.TemplateId)).Distinct().Order().ToArray();
+items.Prepare(ids);
 weights.Prepare(ids);
 var weightMap = new SortedDictionary<uint,long>();
 foreach(var id in ids) {
@@ -90,8 +120,15 @@ foreach(var block in blocks){
 }
 var catalog = new { Schema = 4, PvfSha256 = hashes[0], SidecarSha256 = hashes[1], ProfileSha256 = hashes[2], InfrastructureSha256 = hashes[3], GameSha256 = hashes[4], Characters = records, Towns = TownExport.Read(resources,quests), Openings=openings, DailyLimits=limits,
     commerce.CashPurchasePolicies, commerce.CharacterCashPurchasePolicies, Weights=weightMap,
-    Quests=QuestExport.Read(quests,items), OpeningCombat=OpeningExport.Read(resources,progression,tutorials,skills),
-    Fate = fate.Definition is {} f ? new {f.StoryCapacity, f.MinimumLevel, f.Town, SinCosts=f.Sins.Select(s=>s.Cost).ToArray()} : null };
+    Quests=QuestExport.Read(quests,items,skills,resources), OpeningCombat=OpeningExport.Read(resources,progression,tutorials,skills),
+    Arcade=ArcadeExport.Read(resources),
+    Rename=new[] { LocalCharacterRenameRules.BagSource, LocalCharacterRenameRules.PurchaseSource }
+        .ToDictionary(id=>id,id=>rename.Source(id)!.Template),
+    Dungeons=DungeonExport.Read(resources,quests,tutorials),
+    Commerce=CommerceExport.Read(commerce,items,ids,resources),
+    GoldCarryLimits=Enumerable.Range(0,101).ToDictionary(n=>n,n=>weights.GoldCarryLimit((byte)n)),
+    MailAttachments=ids.Select(weights.Attachment).OfType<LocalPlayerMailAttachmentPolicy>().ToDictionary(x=>x.TemplateId),
+    Fate = FateExport.Read(fate.Definition) };
 Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 var pending = destination + "." + Guid.NewGuid().ToString("N") + ".tmp";
 try

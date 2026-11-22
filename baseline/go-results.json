@@ -1,5 +1,32 @@
 {
-  "scope": "Current partial Go game Host, project PostgreSQL 17.11, matched PVF, Windows loopback",
+  "scope": "Development checkpoints on the same Windows host; historical entry and movement runs use project PostgreSQL 17.11 and the matched PVF.",
+  "gameplayCheckpointBuild20261123": {
+    "command": "go build -o serve100.exe ./cmd/serve100",
+    "go": "go version go1.27.4 windows/amd64",
+    "coldCompilerCacheSeconds": 17.032,
+    "noChangeSeconds": 1.052,
+    "oneGameplayChangeSeconds": 3.172
+  },
+  "gmIndex20261123": {
+    "cacheHit": true,
+    "equipment": 212485,
+    "stackable": 80410,
+    "items": 292895,
+    "imagePacks2Files": 9751,
+    "imagePacks2Bytes": 21639464113,
+    "outputBytes": 45159830,
+    "wallSeconds": 2.15,
+    "cpuSeconds": 1.03,
+    "peakMiB": 208.34
+  },
+  "logicHostBuild20261123": {
+    "checkpoint": "All 148 game and 3 channel routes present; gameplay branch audit in progress. Game server only.",
+    "command": "go build -o serve100.exe ./cmd/serve100",
+    "go": "go version go1.27.4 windows/amd64",
+    "coldCompilerCacheSeconds": 22.974,
+    "noChangeSeconds": 0.801,
+    "oneGameplayChangeSeconds": 2.387
+  },
   "build": {
     "command": "go build -o serve100.exe ./cmd/serve100",
     "go": "go version go1.27.4 windows/amd64",

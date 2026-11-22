@@ -149,11 +149,12 @@ func (q *Quest) arrived(a active) bool {
 }
 
 type view struct {
-	catalog  *Catalog
-	p        player
-	in       storage.Inventory
-	held     map[uint32]uint64
-	receipts map[string]json.RawMessage
+	catalog   *Catalog
+	p         player
+	in        storage.Inventory
+	held      map[uint32]uint64
+	receipts  map[string]json.RawMessage
+	inDungeon bool
 }
 
 func (v view) remaining(q *Quest, visiting map[uint16]bool) (uint32, error) {
@@ -203,7 +204,7 @@ func (v view) remaining(q *Quest, visiting map[uint16]bool) (uint32, error) {
 		}
 		return n, nil
 	case questClear:
-		if q.TownHandIn && v.handInReady(q, visiting) {
+		if !v.inDungeon && q.TownHandIn && v.handInReady(q, visiting) {
 			return 0, nil
 		}
 		var left uint32
@@ -237,7 +238,7 @@ func (v view) remaining(q *Quest, visiting map[uint16]bool) (uint32, error) {
 		}
 		return left, nil
 	case reach:
-		if q.arrived(a) || q.Subtype == 1 && q.AcceptanceSupported && q.contains(int(v.p.pos.Town), int(v.p.pos.Area), int(v.p.pos.X), int(v.p.pos.Y)) {
+		if q.arrived(a) || !v.inDungeon && q.Subtype == 1 && q.AcceptanceSupported && q.contains(int(v.p.pos.Town), int(v.p.pos.Area), int(v.p.pos.X), int(v.p.pos.Y)) {
 			return 0, nil
 		}
 		return 1, nil
@@ -256,6 +257,10 @@ func sortedKeys[V any](m map[uint16]V) []uint16 {
 	return ids
 }
 func (c *Catalog) Project(character storage.Character, in storage.Inventory, receipts map[string]json.RawMessage) ([]Packet, error) {
+	return c.ProjectScene(character, in, receipts, false)
+}
+
+func (c *Catalog) ProjectScene(character storage.Character, in storage.Inventory, receipts map[string]json.RawMessage, inDungeon bool) ([]Packet, error) {
 	p, err := playerOf(character)
 	if err != nil {
 		return nil, err
@@ -263,12 +268,8 @@ func (c *Catalog) Project(character storage.Character, in storage.Inventory, rec
 	if p.level == 0 || len(p.hist.Active) > 20 || in.CharacterID != character.ID {
 		return nil, errors.New("invalid quest projection owner or level")
 	}
-	v := view{c, p, in, map[uint32]uint64{}, receipts}
-	for _, a := range in.Items {
-		if a.Location == 0 {
-			v.held[a.TemplateID] += uint64(a.Count)
-		}
-	}
+	v := projectionView(c, p, in, receipts)
+	v.inDungeon = inDungeon
 	activeBody := little.AppendUint32(nil, uint32(len(p.hist.Active)))
 	available := map[uint16]bool{}
 	for _, id := range sortedKeys(p.hist.Active) {

@@ -63,6 +63,9 @@ func (g *game) move(ctx context.Context, x, y, speed uint16) error {
 	if duellobby.IsChannel(g.channel) {
 		return g.moveDuel(r, x, y)
 	}
+	if g.channel == 63 {
+		return g.moveOculus(r, x, y)
+	}
 	if r.Phase != storage.TownReady || g.channel != 19 {
 		return storage.ErrPhase
 	}
@@ -89,7 +92,10 @@ func (g *game) move(ctx context.Context, x, y, speed uint16) error {
 		return err
 	}
 	g.gaugePending = false
-	return g.arrivalNotices(t, q, gameplay)
+	if err = g.arrivalNotices(t, q, gameplay); err != nil || len(q.Active) == 0 {
+		return err
+	}
+	return g.autoCompleteDeliveryChildren(ctx)
 }
 
 func (g *game) arrivalNotices(t *resources.TownCatalog, q resources.TownQuests, gameplay []byte) error {

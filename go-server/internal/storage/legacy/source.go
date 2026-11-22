@@ -43,9 +43,13 @@ type Report struct {
 	Characters, Gold  int64
 	ActivationIssues  []string
 	Staged, Activated bool
+	ActivationVersion int    `json:",omitempty"`
+	ActivationSHA256  string `json:",omitempty"`
+	VersionInferred   bool   `json:",omitempty"`
 }
 type source struct {
 	db      *sql.DB
+	conn    *sql.Conn
 	tx      *sql.Tx
 	objects []Object
 	report  Report
@@ -63,29 +67,39 @@ func openSource(ctx context.Context, path string) (*source, error) {
 	if !info.Mode().IsRegular() {
 		return nil, errors.New("source must be an existing SQLite file")
 	}
-	p := filepath.ToSlash(abs)
-	if filepath.VolumeName(abs) != "" && !strings.HasPrefix(p, "/") {
-		p = "/" + p
-	}
-	u := url.URL{Scheme: "file", Path: p, RawQuery: "mode=ro&_pragma=query_only(1)"}
-	db, err := sql.Open("sqlite", u.String())
+	db, err := sql.Open("sqlite", sqliteURI(abs, "mode=ro&_pragma=query_only(1)"))
 	if err != nil {
 		return nil, err
 	}
 	db.SetMaxOpenConns(1)
-	tx, err := db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	conn, err := db.Conn(ctx)
 	if err != nil {
 		db.Close()
 		return nil, err
 	}
-	s := &source{db: db, tx: tx}
+	tx, err := conn.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		conn.Close()
+		db.Close()
+		return nil, err
+	}
+	s := &source{db: db, conn: conn, tx: tx}
 	if err = s.inspect(ctx); err != nil {
 		s.close()
 		return nil, err
 	}
 	return s, nil
 }
-func (s *source) close() { s.tx.Rollback(); s.db.Close() }
+
+func sqliteURI(abs, query string) string {
+	p := filepath.ToSlash(abs)
+	if filepath.VolumeName(abs) != "" && !strings.HasPrefix(p, "/") {
+		p = "/" + p
+	}
+	return (&url.URL{Scheme: "file", Path: p, RawQuery: query}).String()
+}
+
+func (s *source) close() { s.tx.Rollback(); s.conn.Close(); s.db.Close() }
 
 func Inspect(ctx context.Context, path string) (Report, error) {
 	s, err := openSource(ctx, path)
@@ -97,18 +111,10 @@ func Inspect(ctx context.Context, path string) (Report, error) {
 }
 
 func (s *source) inspect(ctx context.Context) error {
-	var meta int
-	err := s.tx.QueryRowContext(ctx, `SELECT version FROM next_schema_metadata WHERE baseline='serve100-next'`).Scan(&meta)
-	if err != nil || meta != 1 {
-		return fmt.Errorf("unrecognized S9A1 save metadata (version %d, read %v)", meta, err)
-	}
-	err = s.tx.QueryRowContext(ctx, `SELECT version FROM next_schema_modules WHERE module='local-entry'`).Scan(&s.report.ModuleVersion)
-	if err != nil {
+	if err := s.inspectVersion(ctx); err != nil {
 		return err
 	}
-	if s.report.ModuleVersion < 1 || s.report.ModuleVersion > 35 {
-		return fmt.Errorf("unsupported local-entry version %d", s.report.ModuleVersion)
-	}
+	var err error
 	var count int
 	if err = s.tx.QueryRowContext(ctx, `SELECT count(*) FROM local_entry_accounts WHERE account='local'`).Scan(&count); err != nil {
 		return err
@@ -133,6 +139,66 @@ func (s *source) inspect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	return s.inspectTables(ctx)
+}
+
+func (s *source) inspectVersion(ctx context.Context) error {
+	var marked int
+	if err := s.tx.QueryRowContext(ctx, `SELECT count(*) FROM main.sqlite_schema
+		WHERE type='table' AND name IN ('next_schema_metadata','next_schema_modules')`).Scan(&marked); err != nil {
+		return err
+	}
+	if marked == 0 {
+		return s.inspectUnmarkedVersion(ctx)
+	}
+	var meta int
+	err := s.tx.QueryRowContext(ctx, `SELECT version FROM next_schema_metadata WHERE baseline='serve100-next'`).Scan(&meta)
+	if err != nil || meta != 1 {
+		return fmt.Errorf("unrecognized S9A1 save metadata (version %d, read %v)", meta, err)
+	}
+	err = s.tx.QueryRowContext(ctx, `SELECT version FROM next_schema_modules WHERE module='local-entry'`).Scan(&s.report.ModuleVersion)
+	if err != nil {
+		return err
+	}
+	if s.report.ModuleVersion < 1 || s.report.ModuleVersion > latestLocalEntry {
+		return fmt.Errorf("unsupported local-entry version %d", s.report.ModuleVersion)
+	}
+	return nil
+}
+
+func (s *source) inspectUnmarkedVersion(ctx context.Context) error {
+	var userVersion, base, extra, weapons, returns int
+	if err := s.tx.QueryRowContext(ctx, "PRAGMA user_version").Scan(&userVersion); err != nil {
+		return err
+	}
+	q := `SELECT
+		count(*) FILTER(WHERE type='table' AND name IN ('local_entry_accounts','local_entry_characters')),
+		count(*) FILTER(WHERE name NOT GLOB 'sqlite_*' AND type IN ('view','trigger') OR name='local_weapon_assets'),
+		count(*) FILTER(WHERE type='table' AND name='local_equipped_weapons')
+		FROM main.sqlite_schema`
+	if err := s.tx.QueryRowContext(ctx, q).Scan(&base, &extra, &weapons); err != nil {
+		return err
+	}
+	if err := s.tx.QueryRowContext(ctx, `SELECT count(*) FROM pragma_table_xinfo('local_entry_characters')
+		WHERE name IN ('return_town','return_area','return_x','return_y','return_direction')`).Scan(&returns); err != nil {
+		return err
+	}
+	if userVersion != 0 || base != 2 || extra != 0 || (returns != 0 && returns != 5) || weapons != 0 && returns != 5 {
+		return errors.New("unrecognized unversioned S9A1 local-entry schema")
+	}
+	version := 1
+	if returns == 5 {
+		version++
+	}
+	if weapons == 1 {
+		version++
+	}
+	s.report.ModuleVersion, s.report.VersionInferred = version, true
+	return nil
+}
+
+func (s *source) inspectTables(ctx context.Context) error {
+	var err error
 	for _, obj := range s.objects {
 		if obj.Kind != "table" || (strings.HasPrefix(obj.Name, "sqlite_") && obj.Name != "sqlite_sequence") {
 			continue

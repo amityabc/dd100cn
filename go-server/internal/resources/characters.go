@@ -12,9 +12,13 @@ import (
 	"strings"
 	"time"
 
+	"s9a1/server/internal/duellobby"
+	"s9a1/server/internal/dungeon"
+	"s9a1/server/internal/fate"
 	"s9a1/server/internal/inventorywire"
 	"s9a1/server/internal/opening"
 	"s9a1/server/internal/questwire"
+	"s9a1/server/internal/storage"
 )
 
 type CharacterTemplate struct {
@@ -25,13 +29,15 @@ type CharacterTemplate struct {
 }
 
 type SeedData struct {
-	DailyLimits map[uint32]byte
-	Weights     map[uint32]int64
-	Fate        *struct {
-		StoryCapacity int
-		SinCosts      []int32
-		MinimumLevel  byte
-		Town          FateTownRoute
+	DailyLimits     map[uint32]byte
+	Weights         map[uint32]int64
+	GoldCarryLimits map[byte]int64
+	MailAttachments map[uint32]storage.MailAttachmentPolicy
+	Rename          map[uint32]json.RawMessage
+	Commerce        storage.CommerceCatalog
+	Fate            *struct {
+		fate.Definition
+		Town FateTownRoute
 	}
 	OpeningCombat opening.CombatCatalog
 }
@@ -42,9 +48,12 @@ type CharacterCatalog struct {
 	Openings     map[byte]opening.Definition
 	CashPolicies map[uint32]inventorywire.CashPolicy
 	Quests       *questwire.Catalog
+	Arcade       duellobby.ArcadeCatalog
+	Dungeons     *dungeon.Catalog
+	GM           GmItems
 }
 
-func LoadCharacters(path, pvf, profile string) (*CharacterCatalog, error) {
+func LoadCharacters(path, pvf, profile string, experienceMultiplier int) (*CharacterCatalog, error) {
 	var raw struct {
 		Schema                                                                    int
 		PvfSha256, SidecarSha256, ProfileSha256, InfrastructureSha256, GameSha256 string
@@ -53,6 +62,8 @@ func LoadCharacters(path, pvf, profile string) (*CharacterCatalog, error) {
 		SeedData
 		Openings                                            []opening.Definition
 		Quests                                              questwire.Data
+		Arcade                                              []duellobby.ArcadeRow
+		Dungeons                                            dungeon.Data
 		CashPurchasePolicies, CharacterCashPurchasePolicies map[uint32]inventorywire.CashPolicy
 	}
 	data, err := os.ReadFile(path)
@@ -70,12 +81,32 @@ func LoadCharacters(path, pvf, profile string) (*CharacterCatalog, error) {
 			return nil, err
 		}
 	}
+	if err := applyExperienceEvent(experienceMultiplier, raw.Quests.Ordinary, &raw.OpeningCombat, &raw.Dungeons); err != nil {
+		return nil, err
+	}
 	towns, err := newTownCatalog(raw.Towns)
 	if err != nil {
 		return nil, err
 	}
 	c := &CharacterCatalog{rows: make(map[[2]byte]CharacterTemplate, len(raw.Characters)), Towns: towns,
 		SeedData: raw.SeedData, Openings: make(map[byte]opening.Definition), CashPolicies: make(map[uint32]inventorywire.CashPolicy)}
+	c.GM = GmItems{Path: strings.TrimSuffix(path, filepath.Ext(path)) + ".gm.zip", Pvf: raw.PvfSha256, Sidecar: raw.SidecarSha256, Profile: raw.ProfileSha256, ordinary: raw.Commerce.Templates}
+	c.Weights = raw.Commerce.BoxCarryWeights(raw.Weights)
+	if weights, clones, err := c.GM.CarryAndClones(); err == nil {
+		for id, grams := range weights {
+			if _, known := c.Weights[id]; !known {
+				c.Weights[id] = grams
+			}
+		}
+		if c.Commerce.AvatarClones == nil {
+			c.Commerce.AvatarClones = make(map[uint32]storage.AvatarClone, len(clones))
+		}
+		for id, clone := range clones {
+			if _, known := c.Commerce.AvatarClones[id]; !known {
+				c.Commerce.AvatarClones[id] = clone
+			}
+		}
+	}
 	for _, d := range raw.Openings {
 		if _, dup := c.Openings[d.Job]; dup || !validHash(d.Hash) || !validHash(d.Dungeon.ResourceHash) {
 			return nil, fmt.Errorf("invalid opening for job %d", d.Job)
@@ -101,6 +132,22 @@ func LoadCharacters(path, pvf, profile string) (*CharacterCatalog, error) {
 	}
 	if err = c.Quests.RequireOperations(); err != nil {
 		return nil, err
+	}
+	c.Arcade, err = duellobby.NewArcadeCatalog(raw.Arcade)
+	if err != nil {
+		return nil, err
+	}
+	c.Dungeons, err = dungeon.NewCatalog(raw.Dungeons)
+	if err != nil {
+		return nil, err
+	}
+	if c.Weights == nil {
+		c.Weights = make(map[uint32]int64)
+	}
+	for id, weight := range c.Dungeons.Drops.Weights {
+		if _, found := c.Weights[id]; !found {
+			c.Weights[id] = weight
+		}
 	}
 	for _, row := range raw.Characters {
 		key := [2]byte{row.Job, row.GrowType}

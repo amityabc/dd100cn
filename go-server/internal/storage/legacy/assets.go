@@ -26,6 +26,21 @@ func (s *source) installAssets(ctx context.Context, pg *sql.Tx, account string) 
 		crystal_expires_at=$5,growth_expires_at=$6 WHERE account=$1`, account, cargo, conqueror, skillMaster, crystal, growth); err != nil {
 		return err
 	}
+	for _, tbl := range s.report.Tables {
+		if tbl.Name != "local_account_battle_pass" || tbl.Rows == 0 {
+			continue
+		}
+		var state string
+		err := s.tx.QueryRowContext(ctx, "SELECT state_json FROM local_account_battle_pass WHERE account='local'").Scan(&state)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+		if err == nil {
+			if _, err = pg.ExecContext(ctx, "UPDATE s9a1.accounts SET battle_pass=$2::json WHERE account=$1", account, state); err != nil {
+				return err
+			}
+		}
+	}
 	owners := map[uint16]storage.Character{}
 	rows, err := s.tx.QueryContext(ctx, "SELECT id,job,gameplay_json,bag_expansion,personal_capacity,personal_capacity_100 FROM local_entry_characters WHERE account='local'")
 	if err != nil {
@@ -55,6 +70,9 @@ func (s *source) installAssets(ctx context.Context, pg *sql.Tx, account string) 
 		if err = s.copyAssetKind(ctx, pg, account, owners, kind); err != nil {
 			return fmt.Errorf("restore %s assets: %w", kind, err)
 		}
+	}
+	if err = s.copyCommerceHistory(ctx, pg, account); err != nil {
+		return err
 	}
 	return s.copyReceipts(ctx, pg)
 }

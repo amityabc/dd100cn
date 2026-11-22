@@ -49,6 +49,7 @@ type openingDeathResult struct {
 	QuestDrop, Luck, FirstHunt, MaterialPolicy, OculusBossPolicy, ApcIndependentPolicy json.RawMessage
 }
 type deathReceipt struct {
+	SpecialGrants      json.RawMessage `json:",omitempty"`
 	Key, Input, Result string
 	Revision           int64
 	Grants             []json.RawMessage
@@ -178,7 +179,7 @@ func (s *Store) CommitTutorialDeath(ctx context.Context, l Lease, p TutorialDeat
 			if err != nil {
 				return out, err
 			}
-			body, err := json.Marshal(deathReceipt{p.ReceiptKey, p.Input, p.Result, c.Revision, []json.RawMessage{}})
+			body, err := json.Marshal(deathReceipt{Key: p.ReceiptKey, Input: p.Input, Result: p.Result, Revision: c.Revision, Grants: []json.RawMessage{}})
 			if err != nil {
 				return out, err
 			}

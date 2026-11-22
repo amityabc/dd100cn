@@ -36,9 +36,10 @@ type transportMenus struct {
 }
 
 type FateTownRoute struct {
-	Camp, Seria TownPoint
-	CampNpc     uint32
-	EntryQuest  uint16
+	Camp, Seria       TownPoint
+	CampNpc, EntryNpc uint32
+	Gate              uint16
+	EntryQuest        uint16
 }
 
 func (t *TownCatalog) roomSource(k areaKey) bool {
@@ -46,6 +47,8 @@ func (t *TownCatalog) roomSource(k areaKey) bool {
 		return k == (areaKey{r.Town, r.Area})
 	})
 }
+
+func (t *TownCatalog) RecordsRoomReturnFrom(p TownPoint) bool { return t.roomSource(p.key()) }
 
 func (t *TownCatalog) neutralPosition(level byte, p TownPoint) bool {
 	a, ok := t.areas[p.key()]
@@ -69,6 +72,10 @@ func (c *CharacterCatalog) RoomExit(level byte, q TownQuests, room TownPoint, sa
 
 func (c *CharacterCatalog) AllowsTownPosition(level byte, q TownQuests, p TownPoint) bool {
 	return c.Towns.allows(level, q, p, false) || c.inFateCamp(level, p)
+}
+
+func (c *CharacterCatalog) AllowsOrdinaryTownPosition(level byte, q TownQuests, p TownPoint) bool {
+	return !c.inFateCamp(level, p) && c.Towns.allows(level, q, p, false)
 }
 
 func (c *CharacterCatalog) inFateCamp(level byte, p TownPoint) bool {

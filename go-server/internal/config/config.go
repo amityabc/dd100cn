@@ -9,24 +9,34 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Config consumes the same config/server.json and optional config/local.json as the legacy host.
 type Config struct {
 	Root   string `json:"-"`
 	Server struct {
-		Address                                                      string
-		ChannelPort, GamePort, MaximumConnections, MaximumFrameBytes int
-		AdditionalGameChannels                                       map[uint16]int
+		Address                                                                          string
+		ChannelPort, GamePort, MaximumConnections, MaximumFrameBytes                     int
+		ReceiveChunkBytes, ReceiveQueueCapacity, SendQueueCapacity, SessionQueueCapacity int
+		AdditionalGameChannels                                                           map[uint16]int
 	}
 	Gameplay struct {
+		ExperienceMultiplier                               int
 		LocalAccountEnabled                                bool
 		NativeTownProfile140, ClientDelegatedCombatEnabled bool
 		NativePartyNotices                                 *bool
 		ChannelScript                                      string
+		ClientDirectory, Launcher                          string
+		GmAccounts                                         []string
+		BattlePassStartsAt, BattlePassEndsAt               *time.Time
 	}
-	Resources struct{ Pvf, ClientProfile string }
-	Lifecycle struct{ StopFile string }
+	Resources    struct{ Pvf, ClientProfile, PvfSha256, Probe string }
+	Storage      struct{ Database string }
+	Lifecycle    struct{ StopFile string }
+	Diagnostics  struct{ Frames, FrameMode string }
+	Verification struct{ EvidenceRoot string }
+	TestModules  struct{ CounterEnabled, SharedBoundaryEnabled bool }
 }
 
 func Load(root string) (Config, error) {
@@ -39,6 +49,9 @@ func Load(root string) (Config, error) {
 	c.Server.Address = "127.0.0.1"
 	c.Server.ChannelPort, c.Server.GamePort = 7001, 10019
 	c.Server.MaximumConnections, c.Server.MaximumFrameBytes = 16, 1<<20
+	c.Server.ReceiveChunkBytes, c.Server.ReceiveQueueCapacity = 8192, 16
+	c.Server.SendQueueCapacity, c.Server.SessionQueueCapacity = 8, 16
+	c.Gameplay.ExperienceMultiplier = 1
 	c.Server.AdditionalGameChannels = make(map[uint16]int)
 	for _, name := range []string{"server.json", "local.json"} {
 		path := filepath.Join(root, "config", name)
@@ -53,6 +66,7 @@ func Load(root string) (Config, error) {
 			return c, fmt.Errorf("%s: %w", path, err)
 		}
 	}
+	gmBaseCount := len(c.Gameplay.GmAccounts)
 	for _, kv := range os.Environ() {
 		name, value, _ := strings.Cut(kv, "=")
 		key, found := strings.CutPrefix(strings.ToUpper(name), "SERVE100_NEXT_")
@@ -62,7 +76,8 @@ func Load(root string) (Config, error) {
 		switch key {
 		case "SERVER__ADDRESS":
 			c.Server.Address = value
-		case "SERVER__CHANNELPORT", "SERVER__GAMEPORT", "SERVER__MAXIMUMCONNECTIONS", "SERVER__MAXIMUMFRAMEBYTES":
+		case "SERVER__CHANNELPORT", "SERVER__GAMEPORT", "SERVER__MAXIMUMCONNECTIONS", "SERVER__MAXIMUMFRAMEBYTES",
+			"SERVER__RECEIVECHUNKBYTES", "SERVER__RECEIVEQUEUECAPACITY", "SERVER__SENDQUEUECAPACITY", "SERVER__SESSIONQUEUECAPACITY":
 			n, e := strconv.Atoi(value)
 			if e != nil {
 				return c, fmt.Errorf("%s must be an integer", name)
@@ -76,6 +91,14 @@ func Load(root string) (Config, error) {
 				c.Server.MaximumConnections = n
 			case "SERVER__MAXIMUMFRAMEBYTES":
 				c.Server.MaximumFrameBytes = n
+			case "SERVER__RECEIVECHUNKBYTES":
+				c.Server.ReceiveChunkBytes = n
+			case "SERVER__RECEIVEQUEUECAPACITY":
+				c.Server.ReceiveQueueCapacity = n
+			case "SERVER__SENDQUEUECAPACITY":
+				c.Server.SendQueueCapacity = n
+			case "SERVER__SESSIONQUEUECAPACITY":
+				c.Server.SessionQueueCapacity = n
 			}
 		case "GAMEPLAY__LOCALACCOUNTENABLED", "GAMEPLAY__NATIVEPARTYNOTICES", "GAMEPLAY__NATIVETOWNPROFILE140", "GAMEPLAY__CLIENTDELEGATEDCOMBATENABLED":
 			v, e := strconv.ParseBool(value)
@@ -94,13 +117,67 @@ func Load(root string) (Config, error) {
 			}
 		case "GAMEPLAY__CHANNELSCRIPT":
 			c.Gameplay.ChannelScript = value
+		case "GAMEPLAY__EXPERIENCEMULTIPLIER":
+			n, e := strconv.Atoi(value)
+			if e != nil {
+				return c, fmt.Errorf("%s must be an integer", name)
+			}
+			c.Gameplay.ExperienceMultiplier = n
+		case "GAMEPLAY__CLIENTDIRECTORY":
+			c.Gameplay.ClientDirectory = value
+		case "GAMEPLAY__LAUNCHER":
+			c.Gameplay.Launcher = value
+		case "GAMEPLAY__BATTLEPASSSTARTSAT", "GAMEPLAY__BATTLEPASSENDSAT":
+			stamp, e := time.Parse(time.RFC3339, value)
+			if e != nil {
+				return c, fmt.Errorf("%s: %w", name, e)
+			}
+			if key == "GAMEPLAY__BATTLEPASSSTARTSAT" {
+				c.Gameplay.BattlePassStartsAt = &stamp
+			} else {
+				c.Gameplay.BattlePassEndsAt = &stamp
+			}
 		case "RESOURCES__PVF":
 			c.Resources.Pvf = value
 		case "RESOURCES__CLIENTPROFILE":
 			c.Resources.ClientProfile = value
+		case "RESOURCES__PVFSHA256":
+			c.Resources.PvfSha256 = value
+		case "RESOURCES__PROBE":
+			c.Resources.Probe = value
+		case "DIAGNOSTICS__FRAMES":
+			c.Diagnostics.Frames = value
+		case "DIAGNOSTICS__FRAMEMODE":
+			c.Diagnostics.FrameMode = value
+		case "STORAGE__DATABASE":
+			c.Storage.Database = value
+		case "VERIFICATION__EVIDENCEROOT":
+			c.Verification.EvidenceRoot = value
+		case "TESTMODULES__COUNTERENABLED", "TESTMODULES__SHAREDBOUNDARYENABLED":
+			v, e := strconv.ParseBool(value)
+			if e != nil {
+				return c, e
+			}
+			if key == "TESTMODULES__COUNTERENABLED" {
+				c.TestModules.CounterEnabled = v
+			} else {
+				c.TestModules.SharedBoundaryEnabled = v
+			}
 		case "LIFECYCLE__STOPFILE":
 			c.Lifecycle.StopFile = value
 		default:
+			if index, ok := strings.CutPrefix(key, "GAMEPLAY__GMACCOUNTS__"); ok {
+				n, e := strconv.Atoi(index)
+				if e != nil || n < 0 {
+					return c, fmt.Errorf("invalid GM account index %q", index)
+				}
+				// Membership is ordinal. Existing JSON indices are overridden by the environment.
+				if n < gmBaseCount {
+					c.Gameplay.GmAccounts[n] = value
+				} else {
+					c.Gameplay.GmAccounts = append(c.Gameplay.GmAccounts, value)
+				}
+			}
 			if id, ok := strings.CutPrefix(key, "SERVER__ADDITIONALGAMECHANNELS__"); ok {
 				channel, e := strconv.ParseUint(id, 10, 16)
 				if e != nil {
@@ -117,6 +194,9 @@ func Load(root string) (Config, error) {
 			}
 		}
 	}
+	if c.Gameplay.ExperienceMultiplier < 1 || c.Gameplay.ExperienceMultiplier > 100 {
+		return c, errors.New("Gameplay:ExperienceMultiplier must be an integer from 1 to 100")
+	}
 	return c, nil
 }
 
@@ -125,6 +205,15 @@ func (c Config) Path(path string) string {
 		return filepath.Clean(path)
 	}
 	return filepath.Join(c.Root, filepath.FromSlash(path))
+}
+
+// Packaged servers keep the prepared catalogs beside their other data.
+// Development instances may select a shared project-local export explicitly.
+func (c Config) CatalogPath() string {
+	if path := os.Getenv("S9A1_CREATION_CATALOG"); path != "" {
+		return c.Path(path)
+	}
+	return c.Path(filepath.Join("Data", "Pvf", "characters.json"))
 }
 
 func (c Config) StopPath() (string, error) {
@@ -141,11 +230,19 @@ func (c Config) GamePorts() (map[uint16]int, error) {
 	if !c.Gameplay.LocalAccountEnabled {
 		return nil, errors.New("the native player entry requires local account mode")
 	}
+	if c.Gameplay.NativePartyNotices != nil && !*c.Gameplay.NativePartyNotices ||
+		c.TestModules.CounterEnabled || c.TestModules.SharedBoundaryEnabled {
+		return nil, errors.New("formal local entry requires native party notices and separate test modules")
+	}
 	if ip := net.ParseIP(s.Address); ip == nil || !ip.IsLoopback() {
 		return nil, errors.New("uncredentialed local entry must bind loopback")
 	}
 	if s.MaximumConnections < 1 || s.MaximumConnections > 128 || s.MaximumFrameBytes < 16 || s.MaximumFrameBytes > 1<<20 {
 		return nil, errors.New("invalid transport limits")
+	}
+	if s.ReceiveChunkBytes < 1 || s.ReceiveChunkBytes > 65536 || s.ReceiveQueueCapacity < 1 || s.ReceiveQueueCapacity > 1024 ||
+		s.SendQueueCapacity < 1 || s.SendQueueCapacity > 1024 || s.SessionQueueCapacity < 1 || s.SessionQueueCapacity > 1024 {
+		return nil, errors.New("invalid bounded transport capacity")
 	}
 	ports := map[uint16]int{19: s.GamePort}
 	for _, row := range []struct {

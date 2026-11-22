@@ -19,7 +19,7 @@ func (g *game) mailRecipient(ctx context.Context, body []byte) error {
 	if errors.Is(err, storage.ErrLease) || errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return err
 	}
-	if err != nil || g.opening != nil || !request.Ordinary() {
+	if err != nil || !g.commerceInTown() || !request.Ordinary() {
 		return reject(2)
 	}
 	if recipient.ID == 0 {

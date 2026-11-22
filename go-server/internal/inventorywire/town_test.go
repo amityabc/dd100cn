@@ -210,8 +210,8 @@ func TestNonemptyCSharpVectors(t *testing.T) {
 func TestCashPeriods(t *testing.T) {
 	now := time.Date(2026, 11, 23, 5, 59, 59, 0, serverTime)
 	legacy := time.Date(2026, 11, 19, 6, 0, 0, 0, serverTime).Unix()
-	o := Options{Now: now, CashPolicies: map[uint32]CashPolicy{1: {7, 101, false}, 2: {1, 102, false}, 3: {5, 1, true}, 4: {10, 0, true}}, AccountPurchases: map[uint32]Purchase{1: {legacy, 2}}}
-	personal := map[uint32]Purchase{4: {1, 4}}
+	o := Options{Now: now, CashPolicies: map[uint32]CashPolicy{1: {7, 101, false}, 2: {1, 102, false}, 3: {5, 1, true}, 4: {10, 0, true}}, AccountPurchases: map[uint32]Purchase{1: {PeriodStart: legacy, Count: 2}}}
+	personal := map[uint32]Purchase{4: {PeriodStart: 1, Count: 4}}
 	b, err := cashBody(o, personal)
 	if err != nil {
 		t.Fatal(err)

@@ -23,10 +23,7 @@ type CashPolicy struct {
 	Period    int
 	Character bool
 }
-type Purchase struct {
-	PeriodStart int64
-	Count       uint32
-}
+type Purchase = storage.CommercePurchase
 type Options struct {
 	Now              time.Time
 	CashPolicies     map[uint32]CashPolicy
@@ -202,6 +199,20 @@ func ordinaryRow(a storage.Asset, c storage.Character) (row, template, error) {
 	return row{a.Slot, core}, t, nil
 }
 
+func OrdinaryWornUpdate(c storage.Character, a storage.Asset) ([]byte, error) {
+	if a.Location != 3 || a.Slot < 12 || a.Slot > 25 && a.Slot != 32 {
+		return nil, errShape
+	}
+	r, t, err := ordinaryRow(a, c)
+	if err != nil {
+		return nil, err
+	}
+	if t.Kind == 2 {
+		return nil, errShape
+	}
+	return append([]byte{3, 1, 0}, r.body...), nil
+}
+
 // MailItem119 is the original commerce projection for a complete escrow asset.
 // The mail reader specifies durability again for both equipment and stackables.
 func MailItem119(a storage.Asset) ([]byte, error) {
@@ -311,6 +322,15 @@ func BagAndWear(in storage.Inventory, c storage.Character) ([]Packet, error) {
 		return nil, err
 	}
 	return bagAndWear(in, lists), nil
+}
+
+func OrdinaryBag(in storage.Inventory, c storage.Character) ([]byte, error) {
+	in.Items = slices.DeleteFunc(slices.Clone(in.Items), func(a storage.Asset) bool { return a.Location != 0 })
+	lists, err := ordinary(in, c)
+	if err != nil {
+		return nil, err
+	}
+	return bagAndWear(in, lists)[0].Body, nil
 }
 
 // NewBagItem is the original acquisition delta when one previously empty slot

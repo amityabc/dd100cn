@@ -5,40 +5,13 @@ import (
 	"math"
 	"slices"
 	"time"
+
+	"encoding/json"
+	"s9a1/server/internal/storage"
 )
 
 var serverTime = time.FixedZone("UTC+8", 8*3600)
 
-func cashWindow(period int, now time.Time, previous Purchase) (start, reset int64) {
-	local := now.In(serverTime)
-	bound := time.Date(local.Year(), local.Month(), local.Day(), 6, 0, 0, 0, serverTime)
-	switch period {
-	case 0:
-		return 1, 0x7fff53f0
-	case 1:
-		if local.Before(bound) {
-			bound = bound.AddDate(0, 0, -1)
-		}
-		return bound.Unix(), bound.AddDate(0, 0, 1).Unix()
-	case 101:
-		legacy := time.Unix(previous.PeriodStart, 0).In(serverTime)
-		if previous.PeriodStart > 0 && previous.PeriodStart <= now.Unix() && now.Unix() < previous.PeriodStart+7*86400 && legacy.Weekday() == time.Thursday && legacy.Hour() == 6 && legacy.Minute() == 0 && legacy.Second() == 0 {
-			return previous.PeriodStart, previous.PeriodStart + 7*86400
-		}
-		bound = bound.AddDate(0, 0, -((int(bound.Weekday()) + 6) % 7))
-		if local.Before(bound) {
-			bound = bound.AddDate(0, 0, -7)
-		}
-		return bound.Unix(), bound.AddDate(0, 0, 7).Unix()
-	case 102:
-		bound = time.Date(local.Year(), local.Month(), 1, 6, 0, 0, 0, serverTime)
-		if local.Before(bound) {
-			bound = bound.AddDate(0, -1, 0)
-		}
-		return bound.Unix(), bound.AddDate(0, 1, 0).Unix()
-	}
-	return 0, 0
-}
 func cashBody(o Options, personal map[uint32]Purchase) ([]byte, error) {
 	if o.CashLimitsBody != nil {
 		raw := o.CashLimitsBody
@@ -105,7 +78,7 @@ func cashBody(o Options, personal map[uint32]Purchase) ([]byte, error) {
 		if found && (previous.PeriodStart <= 0 || previous.Count > 255) {
 			return nil, errShape
 		}
-		start, reset := cashWindow(p.Period, o.Now, previous)
+		start, reset := storage.CommerceWindow(p.Period, o.Now, previous)
 		if reset <= 0 || reset > math.MaxInt32 {
 			return nil, errShape
 		}
@@ -121,4 +94,12 @@ func cashBody(o Options, personal map[uint32]Purchase) ([]byte, error) {
 		w.u32(left)
 	}
 	return w, nil
+}
+
+func CommerceCashLimits(in storage.Inventory, c storage.Character, policies map[uint32]CashPolicy, now time.Time) ([]byte, error) {
+	var profile struct{ CharacterCashPurchases map[uint32]Purchase }
+	if err := json.Unmarshal(c.Gameplay, &profile); err != nil {
+		return nil, err
+	}
+	return cashBody(Options{Now: now, CashPolicies: policies, AccountPurchases: in.AccountPurchases}, profile.CharacterCashPurchases)
 }

@@ -79,6 +79,7 @@ type Actor struct {
 	NameTag                                          *ActorNameTag
 	Disguise                                         *ActorDisguise
 	UniqueAvatarAction                               *ActorAvatarAction
+	AvatarActionProof                                [32]byte
 }
 
 func validateSkills(skills []ActorSkill) error {

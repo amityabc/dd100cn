@@ -2,9 +2,11 @@ package rewardcount
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -58,5 +60,55 @@ func TestNativeDailySnapshot(t *testing.T) {
 	got, err = Body(c, all, limits, dayChange)
 	if err != nil || !bytes.Equal(got, empty) {
 		t.Fatalf("past day must not change current count: %x %v", got, err)
+	}
+}
+
+func TestFrozenCardInventoryCore(t *testing.T) {
+	source := strings.Repeat("A", 64)
+	item := specialItem{
+		Template: &material{TemplateId: 20021, Kind: 1, FirstBagSlot: 9, LastBagSlot: 64, WornSlot: 13,
+			StackLimit: 1, MaximumDurability: 31, MinimumLevel: 100, UsableJobs: 1, ResourceHash: source, WornSlotIsNative: true},
+		Count: 1, Attributes: &attributes{QualitySeed: 92, Durability: 31}, Raw119: make([]uint16, 119), Detail: []uint16{},
+	}
+	if err := json.Unmarshal([]byte(`{"Verified":false,"Jobs":[],"Valid":true}`), &item.Template.WeaponQualification); err != nil {
+		t.Fatal(err)
+	}
+	item.Template.PvfGiftItem, item.Template.RelativeLifetimeSeconds = true, 3600
+	deadline := int64(1792780611)
+	item.Attributes.ExpiresAt = &deadline
+	var rawDeadline [4]byte
+	binary.LittleEndian.PutUint32(rawDeadline[:], uint32(deadline))
+	for idx, value := range rawDeadline {
+		item.Raw119[56+idx] = uint16(value)
+	}
+	if err := validFrozenItem(item, false); err != nil {
+		t.Fatalf("ordinary timed item: %v", err)
+	}
+	item.Raw119[59]++
+	if err := validFrozenItem(item, false); err == nil {
+		t.Fatal("mismatched expiry accepted")
+	}
+	item.Raw119[59]--
+	item.Attributes.Reinforcement, item.Raw119[10] = 10, 10
+	if err := validFrozenItem(item, true); err != nil {
+		t.Fatalf("supported reinforced reward: %v", err)
+	}
+	if err := validFrozenItem(item, false); err == nil {
+		t.Fatal("reinforced item accepted under OrdinaryNew")
+	}
+	item.Attributes.Reinforcement, item.Raw119[10] = 0, 0
+	item.Template.MythologyHash, item.Template.MythologyOptions = &source, 3
+	item.Attributes.Mythology, _ = json.Marshal(map[string]any{
+		"SourceHash": source, "Count": 3, "First": 3, "Second": 5, "Third": 7, "Fourth": 0, "Fifth": 0, "Valid": true,
+	})
+	copy(item.Raw119[114:], []uint16{3, 5, 7})
+	item.Attributes.InitialAmplification, item.Attributes.AmplificationType, item.Attributes.AmplificationValue = true, 0x82, 17
+	item.Raw119[19] = 0x80
+	if err := validFrozenItem(item, true); err != nil {
+		t.Fatalf("supported hidden amplification and mythology: %v", err)
+	}
+	item.Raw119[20] = 17
+	if err := validFrozenItem(item, true); err == nil {
+		t.Fatal("visible raw core leaked the hidden amplification roll")
 	}
 }

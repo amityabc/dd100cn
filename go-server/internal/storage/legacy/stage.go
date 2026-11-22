@@ -25,6 +25,10 @@ const stagingDDL = `
 // Import preserves each original row in PostgreSQL staging. Activation is a
 // separate atomic transaction and never erases or merges an existing account.
 func Import(ctx context.Context, path, dsn, target string, activate bool) (Report, error) {
+	return ImportWithUpgrade(ctx, path, dsn, target, activate, UpgradeOptions{})
+}
+
+func ImportWithUpgrade(ctx context.Context, path, dsn, target string, activate bool, options UpgradeOptions) (Report, error) {
 	if strings.TrimSpace(target) == "" || dsn == "" {
 		return Report{}, errors.New("an explicit target account and a PostgreSQL DSN are required")
 	}
@@ -42,7 +46,20 @@ func Import(ctx context.Context, path, dsn, target string, activate bool) (Repor
 		return s.report, err
 	}
 	if activate && !s.report.Activated {
-		if len(s.report.ActivationIssues) > 0 {
+		install := s
+		if s.report.ModuleVersion < latestLocalEntry {
+			frozen, cleanup, err := s.upgrade(ctx, options)
+			if err != nil {
+				s.report.ActivationIssues = []string{err.Error()}
+				return s.report, fmt.Errorf("snapshot was staged; private SQLite upgrade failed: %w", err)
+			}
+			defer cleanup()
+			install = frozen
+			s.report.ActivationVersion = frozen.report.ModuleVersion
+			s.report.ActivationSHA256 = frozen.report.SHA256
+			s.report.ActivationIssues = frozen.report.ActivationIssues
+		}
+		if len(install.report.ActivationIssues) > 0 {
 			return s.report, errors.New("snapshot was staged; live activation is blocked by the listed unported state")
 		}
 		service, err := storage.Open(ctx, dsn)
@@ -54,9 +71,10 @@ func Import(ctx context.Context, path, dsn, target string, activate bool) (Repor
 		if err != nil {
 			return s.report, err
 		}
-		if err = s.activate(ctx, db, target); err != nil {
+		if err = install.activate(ctx, db, target, s.report.SHA256); err != nil {
 			return s.report, err
 		}
+		s.report.Activated = install.report.Activated
 	}
 	return s.report, err
 }

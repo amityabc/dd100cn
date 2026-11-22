@@ -29,7 +29,7 @@ internal static class OpeningExport
                 c.Key.Branch,c.Key.Stage,Values=c.Value
             }).ToArray();
             var grants = LocalSkillCatalog.ParseAdvancementGrants(characters)
-                .Where(p=>p.Key>0&&skills.SupportsBranch(job,p.Key))
+                .Where(p=>p.Key==0 ? p.Value.All(g=>skills.Get(job,g.Id) is not null) : skills.SupportsBranch(job,p.Key))
                 .ToDictionary(p=>p.Key,p=>p.Value.Select(g=>new {
                     g.Id,g.Level,g.RequiredLevel,g.Awakening,Active=skills.Get(job,g.Id)!.Active
                 }).ToArray());
@@ -40,7 +40,16 @@ internal static class OpeningExport
             jobs.Add(job,new {Initial=initial,Growth=growth,Grants=grants,Awards=awards,
                 d.Dungeon.ExperienceMultiplier,d.Dungeon.DisableExperience});
         }
-        return new {ExperienceHash=experience.Hash,Levels=levels,Jobs=jobs};
+        var stackable=resources.ReadCommerceIndex("stackable");
+        var tickets=new Dictionary<uint,LocalClassTicketDefinition>();
+        foreach(uint id in new uint[]{2660702,2660779})
+        {
+            if(!stackable.Entries.TryGetValue((int)id,out string? path))continue;
+            string text=resources.ReadText(path,1024*1024);
+            var template=LocalPvfGiftItemTemplates.Parse(id,false,text,resources.Probe(path).Sha256);
+            tickets.Add(id,LocalClassTicketResources.Parse(template,text));
+        }
+        return new {ExperienceHash=experience.Hash,Levels=levels,Jobs=jobs,ClassTickets=tickets,Replacement=progression.ClassReplacementPolicy};
     }
 
     // Keep the exact decimal tables consumed by the pinned upstream algorithm.

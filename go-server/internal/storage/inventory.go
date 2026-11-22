@@ -44,7 +44,10 @@ type Inventory struct {
 	CharacterID                                   uint16
 	Revision, AssetRevision                       int64
 	Gold, Coins, Cera, CargoGold                  int64
+	TreasureGauge                                 uint32
+	UniqueAvatarGauge                             uint16
 	BagExpansion, PersonalCapacity, CargoCapacity uint16
+	AccountPurchases                              map[uint32]CommercePurchase
 	Items                                         []Asset
 }
 
@@ -240,7 +243,7 @@ func (s *Store) Inventory(ctx context.Context, l Lease) (Inventory, error) {
 }
 
 func readInventory(ctx context.Context, tx *sql.Tx, account string, r Roster) (Inventory, error) {
-	in := Inventory{CharacterID: r.SelectedID, Cera: r.Cera, CargoGold: r.CargoGold, AssetRevision: r.AssetRevision}
+	in := Inventory{CharacterID: r.SelectedID, Cera: r.Cera, CargoGold: r.CargoGold, AssetRevision: r.AssetRevision, TreasureGauge: r.TreasureGauge, UniqueAvatarGauge: r.UniqueAvatarGauge}
 	err := tx.QueryRowContext(ctx, `SELECT c.revision,c.gold,c.coin,c.bag_expansion,c.personal_capacity,a.cargo_capacity
 			FROM s9a1.characters c JOIN s9a1.accounts a ON c.account=a.account WHERE c.account=$1 AND c.wire_id=$2`, account, r.SelectedID).Scan(&in.Revision, &in.Gold, &in.Coins, &in.BagExpansion, &in.PersonalCapacity, &in.CargoCapacity)
 	if err != nil {
@@ -258,7 +261,15 @@ func readInventory(ctx context.Context, tx *sql.Tx, account string, r Roster) (I
 		}
 		in.Items = append(in.Items, a)
 	}
-	return in, rows.Err()
+	if err = rows.Err(); err != nil {
+		return in, err
+	}
+	rows.Close()
+	in.AccountPurchases, err = readCommercePurchases(ctx, tx, account)
+	if err == nil {
+		observeInventoryProjection(ctx, in)
+	}
+	return in, err
 }
 
 func (s *Store) Receipt(ctx context.Context, l Lease, key string) (json.RawMessage, bool, error) {

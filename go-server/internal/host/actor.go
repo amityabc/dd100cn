@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"errors"
 	"math"
 	"slices"
 	"strings"
 	"time"
 
+	"s9a1/server/internal/inventorywire"
 	"s9a1/server/internal/protocol"
+	"s9a1/server/internal/questwire"
 	"s9a1/server/internal/resources"
 	"s9a1/server/internal/storage"
 )
@@ -68,11 +69,14 @@ func readActor(c storage.Character, channel uint16) (protocol.Actor, actorProfil
 	if channel > 255 || c.Position.Town > 255 || c.Position.Area > 255 {
 		return protocol.Actor{}, p, storage.ErrInvalid
 	}
-	if len(p.SpecialAssets.Items) > 0 {
-		return protocol.Actor{}, p, errors.New("special item actor projection is pending")
-	}
 	a := protocol.Actor{RosterCharacter: protocol.RosterCharacter{ID: c.ID, Name: c.Name, Job: c.Job, Level: c.Level, GrowType: p.Progression.GrowType, Worn: wornEquipment(c.Worn)}, Stats: b, Experience: p.Progression.Experience,
 		Channel: byte(channel), Town: byte(c.Position.Town), Area: byte(c.Position.Area), Direction: c.Position.Direction, AreaState: c.Position.State, X: c.Position.X, Y: c.Position.Y, FatigueLimit: p.Progression.FatigueLimit, SkillStyle: 255, Skills: p.Skills}
+	if len(p.SpecialAssets.Items) > 0 {
+		if err = inventorywire.SpecialActor(c.Gameplay, &a, time.Now()); err != nil {
+			return a, p, err
+		}
+		a.AvatarActionProof = questwire.AvatarActionProof(c.Gameplay)
+	}
 	if p.Initialized {
 		if p.Progression.Fatigue > a.FatigueLimit {
 			return a, p, storage.ErrInvalid

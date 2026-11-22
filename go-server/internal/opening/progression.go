@@ -18,7 +18,15 @@ type CombatCatalog struct {
 		Threshold int64
 		Sp, Tp    uint16
 	}
-	Jobs map[byte]JobCombat
+	Jobs         map[byte]JobCombat
+	ClassTickets map[uint32]struct {
+		Template     json.RawMessage
+		MaximumLevel byte
+	}
+	Replacement *struct {
+		MinimumLevel, MaximumLevel byte
+		Gold                       []uint32
+	}
 }
 
 type growthCurve struct {
@@ -199,6 +207,10 @@ func (j JobCombat) advanceSkills(obj object, level, grow byte) error {
 }
 
 func (cat *CombatCatalog) apply(c storage.Character, award uint32) (next storage.Character, p progress, actual uint32, err error) {
+	return cat.applyGrowth(c, award, 0, nil, false, false)
+}
+
+func (cat *CombatCatalog) applyGrowth(c storage.Character, award uint32, bonusTP uint16, questGrow *byte, forceSkills, advanceBasic bool) (next storage.Character, p progress, actual uint32, err error) {
 	var profile, progression object
 	if err = json.Unmarshal(c.Gameplay, &profile); err != nil {
 		return
@@ -210,11 +222,22 @@ func (cat *CombatCatalog) apply(c storage.Character, award uint32) (next storage
 		return
 	}
 	job, ok := cat.Jobs[c.Job]
-	if !ok || c.Level < 1 || c.Level > 100 || len(cat.Levels) != 100 || p.GrowType > 0x3f || p.GrowType&15 > 5 || p.Hp == 0 {
+	if !ok || c.Level < 1 || c.Level > 100 || len(cat.Levels) != 100 || p.GrowType > 0x3f || p.GrowType&15 > 5 || questGrow == nil && p.Hp == 0 {
 		err = errors.New("invalid saved tutorial progression")
 		return
 	}
 	before := p
+	if questGrow != nil {
+		p.GrowType = *questGrow
+		if p.GrowType > 0x35 || p.GrowType&15 > 5 || uint32(p.Tp)+uint32(bonusTP) > math.MaxUint16 {
+			err = storage.ErrInvalid
+			return
+		}
+		p.Tp += bonusTP
+		if before.GrowType != p.GrowType {
+			progression["GrowType"], _ = json.Marshal(p.GrowType)
+		}
+	}
 	xp := min(uint64(award), math.MaxUint64-p.Experience)
 	actual = uint32(xp)
 	p.Experience += xp
@@ -238,14 +261,18 @@ func (cat *CombatCatalog) apply(c storage.Character, award uint32) (next storage
 		p.Tp += points.Tp
 	}
 	progression["Experience"], _ = json.Marshal(p.Experience)
-	if next.Level != c.Level {
-		progression["Sp"], _ = json.Marshal(p.Sp)
-		progression["Tp"], _ = json.Marshal(p.Tp)
+	awakened := before.GrowType != p.GrowType
+	advance := forceSkills || awakened || (next.Level != c.Level && (p.GrowType&15 != 0 || advanceBasic))
+	if next.Level != c.Level || awakened || forceSkills {
 		next.Stats, err = job.growth(next.Level, p.GrowType, c.Stats)
 		if err != nil {
 			return
 		}
-		if p.GrowType&15 != 0 {
+	}
+	if advance || next.Level != c.Level || p.Sp != before.Sp || p.Tp != before.Tp {
+		progression["Sp"], _ = json.Marshal(p.Sp)
+		progression["Tp"], _ = json.Marshal(p.Tp)
+		if advance {
 			if err = job.advanceSkills(profile, next.Level, p.GrowType); err != nil {
 				return
 			}
@@ -260,6 +287,7 @@ func (cat *CombatCatalog) apply(c storage.Character, award uint32) (next storage
 			}
 			page := owner
 			if other == "SkillStyles" {
+				page = nil
 				if err = json.Unmarshal(owner["Other"], &page); err != nil {
 					return
 				}
@@ -277,7 +305,7 @@ func (cat *CombatCatalog) apply(c storage.Character, award uint32) (next storage
 			}
 			page["Sp"], _ = json.Marshal(sp)
 			page["Tp"], _ = json.Marshal(tp)
-			if p.GrowType&15 != 0 {
+			if advance {
 				if err = job.advanceSkills(page, next.Level, p.GrowType); err != nil {
 					return
 				}

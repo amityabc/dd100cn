@@ -47,7 +47,10 @@ func (g *game) travel(ctx context.Context, op uint16, body []byte) error {
 	if duellobby.IsChannel(g.channel) && !roomReturn {
 		return g.travelDuel(r, req, reject)
 	}
-	if r.Phase != storage.TownReady || r.SelectedID == 0 || g.channel != 19 || g.opening != nil || req.Town > 255 || req.PreviousTown > 255 || req.Direction > 7 || req.X > math.MaxInt16 || req.Y > math.MaxInt16 {
+	if g.channel == 63 && !roomReturn {
+		return g.travelOculus(r, req, reject)
+	}
+	if r.Phase != storage.TownReady || r.SelectedID == 0 || g.channel != 19 || g.opening != nil || g.ordinary.Active() || g.ordinary.Returning() || req.Town > 255 || req.PreviousTown > 255 || req.Direction > 7 || req.X > math.MaxInt16 || req.Y > math.MaxInt16 {
 		return reject()
 	}
 	c, err := selected(r)
@@ -128,8 +131,13 @@ func (g *game) travel(ctx context.Context, op uint16, body []byte) error {
 		return nil
 	}
 	g.gaugePending = false
-	if req.NativeNPC {
-		return nil
+	if !req.NativeNPC {
+		if err = g.arrivalNotices(catalog.Towns, q, t.Gameplay); err != nil {
+			return err
+		}
 	}
-	return g.arrivalNotices(catalog.Towns, q, t.Gameplay)
+	if len(q.Active) != 0 {
+		return g.autoCompleteDeliveryChildren(ctx)
+	}
+	return nil
 }
