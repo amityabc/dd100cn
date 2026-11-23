@@ -52,7 +52,7 @@ func (g *game) npcCommerce(ctx context.Context, op uint16, body []byte) error {
 	if !oculus && op == 21 && storage.IsFateExchangeNPC(npc) {
 		return g.buyFateExchange(ctx, buy, body)
 	}
-	c := g.server.Characters
+	c := g.catalog()
 	catalog := c.Commerce
 	products := catalog.Products
 	run := g.ordinary.Run
@@ -235,7 +235,7 @@ func (g *game) cashBuy(ctx context.Context, body []byte) error {
 		lines[i] = storage.CashLine{Commodity: row.Commodity, CouponTemplate: row.CouponTemplate, CouponSlot: row.CouponSlot,
 			AvatarFlag: row.AvatarFlag, AbilityID: row.AbilityID, PurchaseModel: row.PurchaseModel, Avatar: !row.Ordinary()}
 	}
-	c := g.server.Characters
+	c := g.catalog()
 	now := time.Now()
 	if slices.ContainsFunc(lines, func(line storage.CashLine) bool {
 		return !line.Avatar && c.Commerce.Cash[line.Commodity].BattlePassHash != ""

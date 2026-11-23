@@ -6,7 +6,11 @@ import (
 	"errors"
 )
 
-type OculusMerchantPeer struct{ Dungeon, NPC, Shop uint32 }
+type OculusMerchantPeer struct {
+	Dungeon uint32
+	NPC     uint32 `json:"Npc"`
+	Shop    uint32
+}
 
 type OculusRepairSource struct {
 	RunId                    string

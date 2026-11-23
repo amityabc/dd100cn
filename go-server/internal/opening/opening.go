@@ -132,7 +132,22 @@ func (d Definition) orderedRooms() ([]Room, error) {
 // Reserve assigns the stock connection-scoped contiguous actor range used by
 // every room. Native passive object codes can occupy the same key space.
 func (d Definition) Reserve(first uint16) (base, next uint16, err error) {
+	return d.reserveActors(first, 0)
+}
+
+// ReserveDynamic handles actors created after room identities are reserved.
+func (d Definition) ReserveDynamic(first uint16, count int) (base, next uint16, err error) {
+	if count < 1 {
+		return 0, 0, errors.New("Actor reservation must be positive")
+	}
+	return d.reserveActors(first, count)
+}
+
+func (d Definition) reserveActors(first uint16, dynamicCount int) (base, next uint16, err error) {
 	if first < 402 {
+		if dynamicCount != 0 {
+			return 0, 0, errors.New("Dungeon actor allocator does not belong to this connection")
+		}
 		return 0, 0, errors.New("tutorial actor range starts below the native minimum")
 	}
 	rooms, err := d.orderedRooms()
@@ -146,15 +161,19 @@ func (d Definition) Reserve(first uint16) (base, next uint16, err error) {
 			if scene == nil {
 				continue
 			}
-			spawns := len(scene.Monsters) + len(scene.Companions)
-			if spawns > 255 {
-				return 0, 0, errors.New("tutorial room exceeds the native spawn count")
+			if dynamicCount == 0 {
+				spawns := len(scene.Monsters) + len(scene.Companions)
+				if spawns > 255 {
+					return 0, 0, errors.New("tutorial room exceeds the native spawn count")
+				}
+				count += spawns
 			}
-			count += spawns
 			passives = append(passives, scene.PassiveObjectCodes...)
 		}
 	}
-	if count == 0 {
+	if dynamicCount != 0 {
+		count = dynamicCount
+	} else if count == 0 {
 		count = 1
 	}
 	offset := uint32(first)
@@ -169,6 +188,9 @@ func (d Definition) Reserve(first uint16) (base, next uint16, err error) {
 		offset = code + 1
 	}
 	if uint64(offset)+uint64(count) > math.MaxUint16 {
+		if dynamicCount != 0 {
+			return 0, 0, errors.New("This connection has exhausted its dungeon actor identities")
+		}
 		return 0, 0, errors.New("tutorial actor range is exhausted")
 	}
 	return uint16(offset), uint16(offset + uint32(count)), nil

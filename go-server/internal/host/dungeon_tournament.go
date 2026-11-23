@@ -49,7 +49,7 @@ func (g *game) dungeonTournamentCards(ctx context.Context, run *dungeon.Run, c s
 	if f.Body[0] != 0 || f.Body[1] > 1 {
 		return reject()
 	}
-	in, err := db.ClaimTournament(ctx, g.lease, c, p, f.Body[0], f.Body[1], time.Now(), g.server.Characters.Dungeons.TournamentGrant)
+	in, err := db.ClaimTournament(ctx, g.lease, c, p, f.Body[0], f.Body[1], time.Now(), g.catalog().Dungeons.TournamentGrant)
 	if errors.Is(err, storage.ErrInvalid) || errors.Is(err, storage.ErrConflict) || errors.Is(err, storage.ErrCapacity) {
 		return reject()
 	}

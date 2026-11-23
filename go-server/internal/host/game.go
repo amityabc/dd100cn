@@ -24,6 +24,7 @@ import (
 type game struct {
 	observationID           string
 	server                  *Server
+	frameCatalog            *resources.CharacterCatalog
 	conn                    net.Conn
 	lease                   storage.Lease
 	channel                 uint16
@@ -68,6 +69,13 @@ type game struct {
 	inventoryFrame          *inventoryFrame
 	buffProjection          buffProjection
 	questTicketReplay       questTicketReplay
+}
+
+func (g *game) catalog() *resources.CharacterCatalog {
+	if g.frameCatalog != nil {
+		return g.frameCatalog
+	}
+	return g.server.itemsCatalog.Load()
 }
 
 func (g *game) send(class byte, op uint16, body []byte) error {
@@ -506,7 +514,7 @@ func (g *game) create(ctx context.Context, body []byte) error {
 		return g.send(1, 5, protocol.Failure(18))
 	}
 	now := time.Now()
-	template, ok, err := g.server.Characters.Creation(req.Job, req.GrowType, now)
+	template, ok, err := g.catalog().Creation(req.Job, req.GrowType, now)
 	if err != nil {
 		return err
 	}

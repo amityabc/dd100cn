@@ -32,6 +32,7 @@ type GiftDefinition struct {
 	UsableFrom                                                                 *int64
 	MaximumLevel                                                               byte
 	Usage                                                                      *GiftUsage
+	RequestOpcode                                                              uint16
 }
 
 type GiftCategory struct {
@@ -42,7 +43,8 @@ type GiftCategory struct {
 }
 
 type GiftReward struct {
-	TemplateID, Count uint32
+	TemplateID        uint32 `json:"TemplateId"`
+	Count             uint32
 	Template          json.RawMessage
 	UnavailableReason *string
 	AttachType        byte
@@ -50,6 +52,8 @@ type GiftReward struct {
 	FixedAbility      *byte
 	Upgrades          []GiftUpgrade
 	Wallet            *struct{ Gold, Coin, Cera int64 }
+	BroadcastUpgrade  *byte
+	Broadcast         bool
 }
 
 type GiftUpgrade struct {
@@ -67,15 +71,17 @@ type GiftSpecial struct {
 }
 
 type GiftPool struct {
-	DrawCount int
-	Entries   []struct {
-		Weight uint64
-		Reward GiftReward
-	}
+	DrawCount                  int
+	Entries                    []GiftPoolEntry
 	UsableJobs                 uint16
 	MinimumLevel, MaximumLevel byte
 	GrowType                   *byte
 	UnavailableReason          *string
+}
+
+type GiftPoolEntry struct {
+	Weight uint64
+	Reward GiftReward
 }
 
 type GiftCashPackage struct {
@@ -96,10 +102,12 @@ type GiftUsage struct {
 	CooldownMilliseconds, CooldownGroup, DailyLimit, WeeklyLimit uint32
 	WeeklyResetDay                                               byte
 	AccumulatedLimit                                             uint32
-	AccumulatedRewards                                           []struct {
-		Count   uint32
-		Rewards []GiftReward
-	}
+	AccumulatedRewards                                           []GiftAccumulatedReward
+}
+
+type GiftAccumulatedReward struct {
+	Count   uint32
+	Rewards []GiftReward
 }
 
 type GiftResult struct {

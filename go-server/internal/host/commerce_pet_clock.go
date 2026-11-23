@@ -14,7 +14,7 @@ import (
 )
 
 func (g *game) trackPetCare(c storage.Character) {
-	g.petClockTracked = storage.HasCaredPet(c, g.server.Characters.Commerce.PetCare)
+	g.petClockTracked = storage.HasCaredPet(c, g.catalog().Commerce.PetCare)
 }
 
 func (g *game) petClockMode(pause bool) storage.PetClockMode {
@@ -39,7 +39,7 @@ func (g *game) syncPetClock(ctx context.Context, pause, silent bool) error {
 	if !g.petClockTracked {
 		return nil
 	}
-	rule := g.server.Characters.Commerce.PetCare
+	rule := g.catalog().Commerce.PetCare
 	duel := duellobby.IsChannel(g.channel) && g.duelPosition != nil
 	updates, err := g.server.DB.SyncPetClock(ctx, g.lease, rule, g.petClockMode(pause), duel, time.Now())
 	if errors.Is(err, storage.ErrPhase) {
@@ -83,7 +83,7 @@ func (g *game) feedPet(ctx context.Context, slot uint16, id uint32, body []byte)
 	} else if g.opening != nil {
 		scene = "pet-opening"
 	}
-	c := g.server.Characters.Commerce
+	c := g.catalog().Commerce
 	replay := g.commerceState
 	if replay.Scene != scene {
 		replay = storage.CommerceReplay{}

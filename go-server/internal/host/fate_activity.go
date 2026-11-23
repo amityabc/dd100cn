@@ -89,13 +89,13 @@ func (e *fateEdit) health(restore bool) error {
 }
 
 func (g *game) fateActivity(ctx context.Context, f protocol.Frame) error {
-	def := g.server.Characters.Fate
+	def := g.catalog().Fate
 	if def == nil || g.opening != nil || g.ordinary.Returning() && !(f.Opcode == 72 && g.fateSession.ExitBody != "") {
 		return g.rejectFate(f)
 	}
 	next := fateAction{Session: g.fateSession}
 	now := time.Now()
-	out, err := g.server.DB.ChangeFateActivity(ctx, g.lease, g.server.Characters.Weights, true, func(c storage.Character, in storage.Inventory, prior map[string]json.RawMessage) (storage.TownQuestMutation, error) {
+	out, err := g.server.DB.ChangeFateActivity(ctx, g.lease, g.catalog().Weights, true, func(c storage.Character, in storage.Inventory, prior map[string]json.RawMessage) (storage.TownQuestMutation, error) {
 		var m storage.TownQuestMutation
 		profile, err := fate.Read(c.Gameplay)
 		if err != nil {
@@ -318,7 +318,7 @@ func (g *game) rejectFate(f protocol.Frame) error {
 
 func fateIdentity(body []byte) string { return base64.StdEncoding.EncodeToString(body) }
 func (g *game) advanceFate(f protocol.Frame, e *fateEdit, next *fateAction, active, loaded bool, now time.Time) error {
-	d := &g.server.Characters.Fate.Definition
+	d := &g.catalog().Fate.Definition
 	r := e.Profile.Run
 	if f.Opcode == 72 && next.Session.ExitBody != "" && !g.ordinary.Active() {
 		if !slices.Equal(f.Body, []byte{1, 2, 1}) || next.Session.Character != e.Character.ID || next.Session.ExitRevision != e.Character.Revision || next.Session.ExitBody != fateIdentity(f.Body) {

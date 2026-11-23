@@ -23,7 +23,7 @@ func (g *game) buffRegistration(ctx context.Context, body []byte) error {
 	if err != nil {
 		return err
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	var out storage.TownQuestResult
 	var issue error

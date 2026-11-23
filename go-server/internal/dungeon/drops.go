@@ -56,6 +56,8 @@ type equipmentGeneration struct {
 		Factor float32
 	}
 }
+
+type EquipmentGeneration = equipmentGeneration
 type DropData struct {
 	Hash, MonsterHash string
 	Native            struct {

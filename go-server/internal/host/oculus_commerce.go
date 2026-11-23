@@ -31,7 +31,7 @@ func (g *game) oculusMerchant(x *storage.CommerceTx, npc, shop uint32) (*storage
 	}
 	def := run.Definition.Dungeon
 	peer := storage.OculusMerchantPeer{Dungeon: def.ID, NPC: npc, Shop: shop}
-	if npc == 0 || npc != mode.Rules.ShopNpcId || !slices.Contains(g.server.Characters.Commerce.OculusPeers, peer) {
+	if npc == 0 || npc != mode.Rules.ShopNpcId || !slices.Contains(g.catalog().Commerce.OculusPeers, peer) {
 		return nil, storage.ErrPhase
 	}
 	rescue, key, ok := run.OculusRescue(mode)

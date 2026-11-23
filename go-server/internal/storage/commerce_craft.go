@@ -38,10 +38,16 @@ type CraftEntry struct {
 }
 
 type CraftEquipment struct {
-	TemplateID                                     uint32
+	TemplateID                                     uint32 `json:"TemplateId"`
 	ResourceHash, EquipmentType                    string
 	TargetEquipmentSlot, MinimumLevel, Rarity      int
+	Grade, RemodelGroup                            int
 	CanReinforce, CanAmplify, CanForge, CanRemodel bool
+}
+
+// QuoteGroup identifies equipment that shares one upgrade price and reward table.
+func (e CraftEquipment) QuoteGroup() [5]int {
+	return [5]int{e.MinimumLevel, e.Grade, e.Rarity, e.TargetEquipmentSlot, e.RemodelGroup}
 }
 
 type CraftStages struct {
@@ -50,7 +56,8 @@ type CraftStages struct {
 
 type CraftQuote struct {
 	Gold                                    int64
-	MaterialID, MaterialCount               uint32
+	MaterialID                              uint32 `json:"MaterialId"`
+	MaterialCount                           uint32
 	FailureWeight, PenaltyType, PenaltyLoss int
 	DestroyRewards                          map[uint32]uint32
 	RemodelPenalties                        []struct{ Loss, Weight int }
@@ -58,15 +65,17 @@ type CraftQuote struct {
 }
 
 type CraftBead struct {
-	BeadTemplateID, CardTemplateID        uint32
-	UpgradeLevels                         []byte
-	EquipmentTypes                        []string
-	TargetTemplateIDs, LimitedTemplateIDs []uint32
-	ResourceHash, CardResourceHash        string
+	BeadTemplateID                 uint32 `json:"BeadTemplateId"`
+	CardTemplateID                 uint32 `json:"CardTemplateId"`
+	UpgradeLevels                  []uint16
+	EquipmentTypes                 []string
+	TargetTemplateIDs              []uint32 `json:"TargetTemplateIds"`
+	LimitedTemplateIDs             []uint32 `json:"LimitedTemplateIds"`
+	ResourceHash, CardResourceHash string
 }
 
 type CraftTicketRule struct {
-	TemplateID                                               uint32
+	TemplateID                                               uint32 `json:"TemplateId"`
 	Kind, Level                                              byte
 	ResourceHash                                             string
 	ChancePercent, BookAction, BookOption, BookMaterialCount int
@@ -329,7 +338,7 @@ func (x *CommerceTx) craftBead(q CraftRequest, target Asset, attrs materialAttri
 	if !ok || bead.CharacterID != x.Character.ID || bead.UID == target.UID || len(bead.Core) != 119 ||
 		json.Unmarshal(bead.Template, &t) != nil || json.Unmarshal(bead.Template, &resource) != nil || json.Unmarshal(bead.Attributes, &v) != nil ||
 		t.Kind != 2 || dye.ResourceHash != resource.ResourceHash || v.ExpiresAt != nil && *v.ExpiresAt <= now.Unix() ||
-		v.EnchantUpgradeCount != bead.Core[18] || !slices.Contains(dye.UpgradeLevels, v.EnchantUpgradeCount) ||
+		v.EnchantUpgradeCount != bead.Core[18] || !slices.Contains(dye.UpgradeLevels, uint16(v.EnchantUpgradeCount)) ||
 		!slices.ContainsFunc(dye.EquipmentTypes, func(s string) bool { return strings.EqualFold(d.EquipmentType, s) }) ||
 		len(dye.TargetTemplateIDs) != 0 && !slices.Contains(dye.TargetTemplateIDs, d.TemplateID) ||
 		len(dye.LimitedTemplateIDs) != 0 && !slices.Contains(dye.LimitedTemplateIDs, d.TemplateID) {

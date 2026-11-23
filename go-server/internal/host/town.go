@@ -30,7 +30,7 @@ func (g *game) loginPlacement(c storage.Character, p savedGameplay) (*storage.Se
 		p := point(*c.RoomReturn)
 		previous = &p
 	}
-	t := g.server.Characters.Towns
+	t := g.catalog().Towns
 	home, exit := t.LoginPlacement(c.Level, q, location, previous)
 	if home == nil {
 		return nil, nil
@@ -79,8 +79,8 @@ func (g *game) move(ctx context.Context, x, y, speed uint16) error {
 	}
 	next := c.Position
 	next.X, next.Y, next.WireTail = x, y, speed
-	t := g.server.Characters.Towns
-	if !g.server.Characters.AllowsTownMovement(c.Level, q, point(c.Position), point(next)) {
+	t := g.catalog().Towns
+	if !g.catalog().AllowsTownMovement(c.Level, q, point(c.Position), point(next)) {
 		return storage.ErrInvalid
 	}
 	gameplay, err := t.Arrival(c.Gameplay, c.Level, q, point(next))

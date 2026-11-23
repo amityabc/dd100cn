@@ -82,7 +82,7 @@ func (g *game) dungeonTryConfirm(ctx context.Context, run *dungeon.Run) error {
 		return err
 	}
 	if run.Settlement.Pending == nil {
-		pending, err := g.server.Characters.Quests.PendingDungeonRoomObjective(c, run.Definition.Dungeon.ID, run.Room)
+		pending, err := g.catalog().Quests.PendingDungeonRoomObjective(c, run.Definition.Dungeon.ID, run.Room)
 		if err != nil || pending {
 			return err
 		}
@@ -103,7 +103,7 @@ func (g *game) dungeonTryMovieSettlement(ctx context.Context, run *dungeon.Run, 
 	if err != nil {
 		return err
 	}
-	quests := g.server.Characters.Quests
+	quests := g.catalog().Quests
 	def := run.Definition.Dungeon
 	pending, err := quests.PendingDungeonRoomObjective(c, def.ID, run.Room)
 	if err != nil || pending {
@@ -236,7 +236,7 @@ func (g *game) dungeonResult(ctx context.Context, run *dungeon.Run, c storage.Ch
 			return err
 		}
 	} else {
-		cat := g.server.Characters.Dungeons
+		cat := g.catalog().Dungeons
 		luck, err := cat.Luck.Start(c)
 		if err != nil {
 			return err
@@ -262,7 +262,7 @@ func (g *game) dungeonResult(ctx context.Context, run *dungeon.Run, c storage.Ch
 			}
 		}
 		if award := z.ClearExperienceAward + z.RankExperienceAward; award > 0 {
-			next, actual, err = g.server.Characters.OpeningCombat.ApplyExperience(c, award)
+			next, actual, err = g.catalog().OpeningCombat.ApplyExperience(c, award)
 			if err != nil {
 				return err
 			}
@@ -502,7 +502,7 @@ func (g *game) claimDungeonCard(ctx context.Context, run *dungeon.Run, c storage
 			*pair.raw = raw
 		}
 	}
-	next, luck, err := card.ApplyLuck(g.server.Characters.Dungeons.Luck, c)
+	next, luck, err := card.ApplyLuck(g.catalog().Dungeons.Luck, c)
 	if err != nil {
 		return err
 	}
@@ -643,8 +643,14 @@ func (g *game) dungeonExit(ctx context.Context, run *dungeon.Run, c storage.Char
 		if _, err := g.validateRubyClear(ctx, c, run); err != nil {
 			return err
 		}
-		if option == 0 && a.FatigueUsed == a.FatigueLimit {
-			return storage.ErrPhase
+		if option == 0 {
+			fatigue, err := storage.AvailableDungeonFatigue(c, time.Now())
+			if err != nil {
+				return err
+			}
+			if fatigue.Remaining == 0 {
+				return g.send(1, 72, []byte{0, 4, 0, 0})
+			}
 		}
 		if action == 2 {
 			return g.send(1, 72, []byte{1, 2, option})

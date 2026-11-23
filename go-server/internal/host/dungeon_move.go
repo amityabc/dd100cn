@@ -18,7 +18,7 @@ func (g *game) dungeonMove(ctx context.Context, run *dungeon.Run, c storage.Char
 	if len(m.Proof) != 0 {
 		if run.OculusEntry == nil {
 			d := run.Definition.Dungeon
-			quest, _, err := g.server.Characters.Quests.ActiveDungeonQuestProof(c, d.ID, d.QuestConnections)
+			quest, _, err := g.catalog().Quests.ActiveDungeonQuestProof(c, d.ID, d.QuestConnections)
 			if err != nil {
 				return err
 			}
@@ -40,7 +40,7 @@ func (g *game) dungeonMove(ctx context.Context, run *dungeon.Run, c storage.Char
 	}
 	if m.Cost != 0 {
 		fatigue, err := db.ChargeDungeonFatigue(ctx, g.lease, c, time.Now(), m.Cost, false,
-			dungeonLuck(g.server.Characters.Dungeons, run), nil, nil)
+			dungeonLuck(g.catalog().Dungeons, run), nil, nil)
 		if err != nil {
 			return err
 		}

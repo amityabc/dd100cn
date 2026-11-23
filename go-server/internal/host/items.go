@@ -47,7 +47,7 @@ func (g *game) moveItem(ctx context.Context, f protocol.Frame) error {
 			return g.send(1, 19, inventorymove.Rejected(req))
 		}
 	}
-	out, err := g.server.DB.Move(ctx, g.lease, c.ID, c.Revision, req, g.server.Characters.Weights)
+	out, err := g.server.DB.Move(ctx, g.lease, c.ID, c.Revision, req, g.catalog().Weights)
 	if err != nil {
 		if errors.Is(err, storage.ErrInvalid) || errors.Is(err, storage.ErrPhase) || errors.Is(err, storage.ErrCapacity) {
 			return g.send(1, 19, inventorymove.Rejected(req))

@@ -40,6 +40,10 @@ local-entry v35 直接走激活校验。local-entry v1～v34，含旧服可识�
 
 源码构建和发布包内的 `import-save` 均自带旧档升级逻辑。用 `-account` 指定要接收该存档的 PostgreSQL 账号。
 
+原版发行库在 `foundation_state` 保存空服首次发放的收据。导入器按目的账号保留原始键值、原档摘要和发行收据，当前点券取自玩家存档。PostgreSQL 的 `s9a1.release_seed` 可分别查询每个导入账号的发放记录。项目内的 `v35-official-release.sqlite3.gz` 来自旧 C# 正式发行命令。[导入实现](legacy/foundation.go) · [原版发行档回归](legacy/foundation_test.go)
+
+新建 Go 发行库的收据也包含 `Policy`、`Account`、`Cera`、`Characters`、`Build` 五个字段。`Build` 是用发行程序文件 SHA-256 标识该构建的 UUID。同一程序重复生成时该值相同。导入旧 SQLite 时完整保留原收据及其 C# 模块 GUID。上一版 Go 的 PostgreSQL v15 发行表只保存了前四项，升级 v16 时据实保留这四项。[空服种子](release_seed.go) · [发行程序身份](../../cmd/serve100/lifecycle_seed.go)
+
 ```powershell
 .\bin\import-save.exe -mode activate -source $oldSave -account $account
 ```

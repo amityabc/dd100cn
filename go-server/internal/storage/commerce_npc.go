@@ -75,6 +75,9 @@ func (x *CommerceTx) BuyNPC(offer CommerceProduct, quantity uint32, catalog Comm
 	}
 	x.Inventory.Gold -= cost
 	for _, quota := range offer.Limits {
+		if quota.Legacy || quota.Count == 0 || quota.Count > math.MaxInt32 {
+			return ErrInvalid
+		}
 		field, id := "NpcPurchases", offer.TemplateID
 		if quota.Account {
 			field, id = "", id|0x80000000

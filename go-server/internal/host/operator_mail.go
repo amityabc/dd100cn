@@ -8,6 +8,7 @@ import (
 	"slices"
 	"time"
 
+	"s9a1/server/internal/catalogprep"
 	"s9a1/server/internal/config"
 	"s9a1/server/internal/operator"
 	"s9a1/server/internal/resources"
@@ -25,7 +26,7 @@ func (s *Server) operatorMail(ctx context.Context, m operator.Mail) operator.Rep
 	if original != nil && original.Intent != m {
 		return fail(errors.New("Mail operation conflicts with its saved intent"))
 	}
-	raw, err := s.Characters.GM.Template(m.TemplateId)
+	raw, err := s.prepareGMMail(ctx, m.TemplateId)
 	if err != nil {
 		return fail(err)
 	}
@@ -107,7 +108,16 @@ func (s *Server) pumpOperatorMail(ctx context.Context) {
 					r, err := s.DB.Snapshot(ctx, p.player.lease)
 					actionErr = err
 					if err == nil && r.Phase == storage.TownReady {
-						target = r.SelectedID
+						c, err := selected(r)
+						if err != nil {
+							actionErr = err
+						} else {
+							profile, err := readGameplay(c.Gameplay)
+							actionErr = err
+							if err == nil && profile.Initialized {
+								target = c.ID
+							}
+						}
 					}
 				}
 				p.serial.Unlock()
@@ -150,7 +160,10 @@ func QueueDisconnectedMail(root string, m operator.Mail) (operator.Reply, error)
 	if err != nil {
 		return operator.Reply{}, err
 	}
-	raw, err := catalog.GM.Template(m.TemplateId)
+	raw, err := catalogprep.PrepareGMMail(context.Background(), catalog, c.Path(c.Resources.Pvf), c.Path(c.Resources.ClientProfile), m.TemplateId, false)
+	if errors.Is(err, catalogprep.ErrGmMailUnsupported) {
+		return operator.Message("Rejected", m.OperationId, "物品不支持普通邮件附件，或数量超过 PVF 上限。"), nil
+	}
 	if err != nil {
 		return operator.Reply{}, err
 	}

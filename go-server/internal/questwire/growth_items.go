@@ -15,16 +15,28 @@ import (
 )
 
 type growthItems struct {
-	Experience   map[uint32]experienceItem
-	LevelTickets map[uint32]levelTicket
-	Capsules     map[uint32]capsuleItem
-	QuestTickets map[uint32]questTicketItem
-	Emblems      storage.EmblemCatalog
-	AvatarEdits  storage.AvatarEditCatalog
-	Teleports    map[uint32]teleportDefinition
-	PetGrowth    *storage.PetGrowthRule
+	Experience          map[uint32]experienceItem
+	LevelTickets        map[uint32]levelTicket
+	Capsules            map[uint32]capsuleItem
+	QuestTickets        map[uint32]questTicketItem
+	Emblems             storage.EmblemCatalog
+	AvatarEdits         storage.AvatarEditCatalog
+	AvatarProjection    json.RawMessage `json:"-"`
+	PreparedTemplateIDs []uint32        `json:"-"`
+	Teleports           map[uint32]teleportDefinition
+	PetGrowth           *storage.PetGrowthRule
 }
 
+func (g growthItems) MarshalJSON() ([]byte, error) {
+	type record growthItems
+	if len(g.AvatarProjection) == 0 {
+		return json.Marshal(record(g))
+	}
+	return json.Marshal(struct {
+		record
+		AvatarEdits json.RawMessage
+	}{record(g), g.AvatarProjection})
+}
 func (c *Catalog) PetGrowthRule() *storage.PetGrowthRule { return c.growth.PetGrowth }
 
 type levelTicket struct {

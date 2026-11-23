@@ -19,6 +19,7 @@ type FateBoxesCatalog struct {
 type FateBoxRule struct {
 	Source, Reward   json.RawMessage
 	RewardCount      uint32
+	HideBoosterInfo  int
 	RewardAttachType byte
 }
 

@@ -2,19 +2,26 @@ package host
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"maps"
 	"math"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf16"
 
+	"s9a1/server/internal/catalogprep/gm"
 	"s9a1/server/internal/dungeon"
 	"s9a1/server/internal/inventorywire"
+	"s9a1/server/internal/pvf"
+	"s9a1/server/internal/resources"
 	"s9a1/server/internal/storage"
 )
 
@@ -45,10 +52,10 @@ func gameMasterRequest(text string) (storage.GameMasterRequest, bool) {
 	}
 	u32 := func(s string) (uint32, bool) {
 		n, err := strconv.ParseUint(s, 10, 32)
-		return uint32(n), err == nil && n > 0 && n < math.MaxUint32
+		return uint32(n), err == nil && n > 0
 	}
 	id, ok := u32(w[1])
-	if !ok {
+	if !ok || id == math.MaxUint32 {
 		return q, false
 	}
 	q.ID = id
@@ -94,9 +101,6 @@ func (g *game) gameMaster(ctx context.Context, body []byte) error {
 	}
 	isAPC := text == "//apc" || strings.HasPrefix(text, "//apc ")
 	feedback := func(message string) error {
-		if !isAPC {
-			return nil
-		}
 		words := utf16.Encode([]rune(strings.ReplaceAll(message, "\x00", " ")))
 		payload := make([]byte, 0, 2*(min(256, len(words))+1))
 		for _, ch := range words[:min(256, len(words))] {
@@ -104,22 +108,48 @@ func (g *game) gameMaster(ctx context.Context, body []byte) error {
 		}
 		return g.send(0, 0x7f43, append(payload, 0, 0))
 	}
+	apcFeedback := func(message string) error {
+		if !isAPC {
+			return nil
+		}
+		return feedback(message)
+	}
 	if err = g.server.DB.ValidateLease(ctx, g.lease); err != nil {
 		return err
 	}
 	if !slices.Contains(g.server.gmAccounts, g.lease.Account) {
-		return feedback("当前账号没有GM命令权限")
+		return apcFeedback("当前账号没有GM命令权限")
 	}
 	q, ok := gameMasterRequest(text)
-	if !ok {
-		return feedback("用法：//apc 编号 [等级(-1跟随角色)] [友方/中立/敌方或0/1/2]")
+	catalog := g.catalog()
+	if isAPC || ok && q.Operation == "apc" {
+		var hash string
+		if ok {
+			hash, err = g.prepareGameMasterAPC(catalog, q.ID)
+			if err != nil {
+				return feedback("APC召唤失败：" + err.Error())
+			}
+		}
+		return g.gameMasterAPC(ctx, q, ok, hash, apcFeedback)
 	}
-	catalog := g.server.Characters
-	if q.Operation == "kill" || q.Operation == "apc" {
+	if !ok {
+		return nil
+	}
+	if q.Operation == "item" {
+		prepared, err := g.server.prepareGMItem(ctx, q.ID)
+		if err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			return nil
+		}
+		catalog, g.frameCatalog = prepared, prepared
+	}
+	if q.Operation == "kill" {
 		run := g.ordinary.Run
 		if g.channel != 19 && (g.channel != 63 || run == nil || run.OculusEntry == nil) ||
 			g.opening != nil || !run.GameMasterReady() || g.ordinary.Returning() {
-			return feedback("请在副本房间加载完成且角色存活时使用此命令")
+			return nil
 		}
 		r, err := g.server.DB.Current(ctx, g.lease)
 		if err != nil {
@@ -138,26 +168,7 @@ func (g *game) gameMaster(ctx context.Context, body []byte) error {
 			return err
 		}
 		if r.Phase != storage.TownReady || c.ID != run.Character || !p.Initialized || p.Progression.Hp == 0 {
-			return feedback("请在副本房间加载完成且角色存活时使用此命令")
-		}
-		if q.Operation == "apc" {
-			if !g.server.delegated || run.InLayer {
-				return feedback("APC召唤需要开启本地战斗委托，且不能在剧情层使用")
-			}
-			hash := catalog.Commerce.GmApcs[q.ID]
-			if _, err := hex.DecodeString(hash); len(hash) != 64 || err != nil {
-				return feedback("APC编号不存在或资源未准备完成")
-			}
-			lv := q.Level
-			if lv == -1 {
-				lv = int(c.Level)
-			}
-			apc, ok := run.AddGameMasterAPC(g.nextActor, q.ID, byte(lv), q.Faction, hash)
-			if !ok {
-				return feedback("本次副本的 GM 召唤名额或对象编号不足")
-			}
-			g.nextActor++
-			return g.sendGameMasterAPC(apc)
+			return nil
 		}
 		for _, id := range run.GameMasterTargets() {
 			death := binary.LittleEndian.AppendUint32(nil, uint32(id))
@@ -268,6 +279,100 @@ func (g *game) gameMaster(ctx context.Context, body []byte) error {
 	default:
 		return nil
 	}
+}
+
+func (g *game) gameMasterAPC(ctx context.Context, q storage.GameMasterRequest, parsed bool, hash string, feedback func(string) error) error {
+	r, err := g.server.DB.Current(ctx, g.lease)
+	if err != nil {
+		return err
+	}
+	c, err := selected(r)
+	if errors.Is(err, storage.ErrPhase) {
+		return feedback("No initialized selected character")
+	}
+	if err != nil {
+		return err
+	}
+	p, err := readGameplay(c.Gameplay)
+	if err != nil {
+		return err
+	}
+	if !p.Initialized {
+		return feedback("No initialized selected character")
+	}
+	if !parsed {
+		return feedback("用法：//apc 编号 [等级(-1跟随角色)] [友方/中立/敌方或0/1/2]")
+	}
+	run := g.ordinary.Run
+	if g.channel != 19 && (g.channel != 63 || run == nil || run.OculusEntry == nil) || g.opening != nil ||
+		!run.GameMasterReady() || g.ordinary.Returning() || r.Phase != storage.TownReady || c.ID != run.Character || p.Progression.Hp == 0 {
+		return feedback("请在副本房间加载完成且角色存活时使用此命令")
+	}
+	if !g.server.delegated || run.InLayer {
+		return feedback("APC召唤需要开启本地战斗委托，且不能在剧情层使用")
+	}
+	level := byte(q.Level)
+	if q.Level == -1 {
+		level = c.Level
+	}
+	apc, next, err := run.AddGameMasterAPC(g.nextActor, q.ID, level, q.Faction, hash)
+	if err != nil {
+		return feedback(err.Error())
+	}
+	g.nextActor = next
+	return g.sendGameMasterAPC(apc)
+}
+
+func (g *game) prepareGameMasterAPC(catalog *resources.CharacterCatalog, id uint32) (string, error) {
+	if hash := catalog.Commerce.GmApcs[id]; len(hash) == 64 {
+		if _, err := hex.DecodeString(hash); err == nil {
+			return hash, nil
+		}
+	}
+	a, err := pvf.Open(g.server.pvfPath, g.server.profilePath)
+	if err != nil {
+		return "", err
+	}
+	defer a.Close()
+	hash, err := gameMasterAPCSource(a, id)
+	if err != nil {
+		return "", err
+	}
+	inputs, err := gm.FileMetadata(g.server.pvfPath, g.server.profilePath, false)
+	if err != nil {
+		return "", err
+	}
+	if inputs.PvfSha256 != catalog.GM.Pvf || inputs.SidecarSha256 != catalog.GM.Sidecar || inputs.ProfileSha256 != catalog.GM.Profile {
+		return "", errors.New("APC资源与当前目录不一致")
+	}
+	return hash, nil
+}
+
+func gameMasterAPCSource(a gm.ItemArchive, id uint32) (string, error) {
+	const budget = 1 << 20
+	index, err := a.ReadIndex("aicharacter", budget)
+	if err != nil {
+		return "", err
+	}
+	path, found := index[int64(id)]
+	if !found {
+		return "", errors.New("APC编号不存在，请使用aicharacter资源编号")
+	}
+	text, err := a.ReadText(path, budget)
+	if errors.Is(err, os.ErrNotExist) {
+		return "", errors.New("PVF resource not found")
+	}
+	if err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(text) == "" {
+		return "", errors.New("APC资源为空")
+	}
+	raw, err := a.Read(path, budget)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%X", sha256.Sum256(raw)), nil
 }
 
 func (g *game) sendGameMasterAPC(a dungeon.GameMasterAPC) error {

@@ -18,11 +18,12 @@ type PotionRecovery struct {
 }
 
 type PotionDefinition struct {
-	TemplateID                                                       uint32
+	TemplateID                                                       uint32 `json:"TemplateId"`
 	ResourceHash                                                     string
 	MinimumLevel, MaximumLevel                                       byte
 	UsableJobs                                                       uint16
-	HP, MP                                                           *PotionRecovery
+	HP                                                               *PotionRecovery `json:"Hp"`
+	MP                                                               *PotionRecovery `json:"Mp"`
 	CooldownMilliseconds                                             uint32
 	CooldownGroup                                                    *uint32
 	AcquisitionTemplate                                              json.RawMessage
@@ -42,6 +43,14 @@ type PotionSummon struct {
 
 func (s *PotionSummon) Supported() bool {
 	return s != nil && s.ActorCode == 5409 && s.Level == 60 && s.DurationMilliseconds == 900000 && s.NativeFlag == 1
+}
+
+func (s PotionSummon) MarshalJSON() ([]byte, error) {
+	type wire PotionSummon
+	return json.Marshal(struct {
+		wire
+		Supported bool
+	}{wire: wire(s), Supported: s.Supported()})
 }
 
 type FatigueItemDefinition struct {

@@ -6,7 +6,14 @@
 
 原生服务程序在 Server/artifacts/bin/serve100/release/serve100.exe。它识别 --root、--run-id、--bounded-console、--request-stop、--prepare-client、--check-inputs 及用于预检的 --evidence-root。旧版 GM 工具使用相同命令和本机管道。工具只在 --prepare-client 命令验证当前要求的就绪进程后写入配对配置。
 
-Tool/bin 包含 Go 多人启动器、管理工具和历史存档导入工具。发布清单逐项记录文件哈希，ZIP 旁的 .sha256 文件记录整包哈希。需要原捕获窗口时，将 Diagnostics.FrameMode 设置为 metadata 或 full。正常运行默认不记录应用帧。
+Tool/bin 包含 Go 多人启动器、管理工具、历史存档导入器和原生资源编译器。发行包已随附玩法及 GM 目录。需要复建时，可从包根运行以下命令。发布清单逐项记录文件哈希，ZIP 旁的 .sha256 文件记录整包哈希。需要原捕获窗口时，将 Diagnostics.FrameMode 设置为 metadata 或 full。
+
+```powershell
+.\Tool\bin\prepare-catalog.exe -pvf Server/Data/Pvf/Script.pvf -profile Server/Data/Pvf/Client100Profile.json -output Server/Data/Pvf/characters.json
+.\Tool\bin\prepare-catalog.exe -section gm -pvf Server/Data/Pvf/Script.pvf -profile Server/Data/Pvf/Client100Profile.json -output Server/Data/Pvf/characters.gm.zip
+```
+
+在源码树的 `go-server` 目录运行 `pwsh -NoProfile -File .\tools\publish.ps1 -ArchiveOnly`，只保留 `.work/publish` 下的 ZIP 和 `.zip.sha256`。此模式从原位置把 PVF、配置资料和生成好的目录写入压缩包，并复核每个条目的路径、长度及 SHA-256。压缩包中的目录结构和 `release-manifest.json` 与目录发布相同。省略 `-ArchiveOnly` 时同时生成展开目录和 ZIP。
 
 ## 带停服备份启动
 
@@ -22,3 +29,4 @@ Invoke-S9A1StoppedSave (Get-Location).Path 'Work/SaveBackups/before-start' 'back
 ```
 
 `StoppedDataBackup` 使用事先生成的 `save.dump` 与 `manifest.json`。在关服后和实际启动前各验证一次备份哈希、数据库身份、发行程序及当前逻辑数据。任何一项失配都会中止启动，原备份和数据库仍可供检查。源码树用同一备份约定，点载入 `go-server/tools/launcher-runtime.ps1` 并传入 `s9a1` 的绝对路径。发布包的 `BuildRun` 复用已发布的 Go 程序，源码树才调用编译和 Git 更新。
+`Tool/bin/import-save.exe` 可在导入 PostgreSQL 前，将 v1～v34 的旧 SQLite 存档升级到 v35。它先核对并备份源快照，在发布目录的 `.work/legacy-import` 中升级临时副本，再对目标账号执行激活。导入器的 `stage`、`activate` 通过 `S9A1_DATABASE_URL` 读取目标连接串。

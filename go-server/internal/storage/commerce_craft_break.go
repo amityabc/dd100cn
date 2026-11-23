@@ -9,16 +9,20 @@ import (
 )
 
 type CraftDestruction struct {
-	CubeID, CubeCount uint32
-	SuppressSoul      bool
-	Fixed             map[uint32]uint32
-	Row               struct {
-		Additional                                     []uint32
-		GreatDivisor, NormalDivisor                    float64
-		AdditionalGreatChance                          float64
-		SoulID                                         uint32
-		SoulDivisor, SoulGreatChance, SoulNormalChance float64
-	}
+	CubeID       uint32 `json:"CubeId"`
+	CubeCount    uint32
+	SuppressSoul bool
+	Fixed        map[uint32]uint32
+	Row          CraftDestructionRow
+}
+
+type CraftDestructionRow struct {
+	CubeMultiplier, AdditionalNormalChance         float64
+	Additional                                     []uint32
+	GreatDivisor, NormalDivisor                    float64
+	AdditionalGreatChance                          float64
+	SoulID                                         uint32 `json:"SoulId"`
+	SoulDivisor, SoulGreatChance, SoulNormalChance float64
 }
 
 func craftRemodelLoss(q CraftQuote, seed uint64) (int, error) {

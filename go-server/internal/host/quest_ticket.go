@@ -50,7 +50,7 @@ func (g *game) runQuestTicket(ctx context.Context, req questwire.QuestTicketRequ
 	if duel {
 		phase = storage.Selected
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	opts := questwire.TicketContext{SupportsBranch: cat.OpeningCombat.SupportsClassBranch,
 		CompleteContext: questwire.CompleteContext{ChangeContext: questwire.ChangeContext{Now: now}, Growth: cat.OpeningCombat.ApplyQuestGrowth,

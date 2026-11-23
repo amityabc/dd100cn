@@ -34,7 +34,7 @@ func (g *game) questPast(ctx context.Context, f protocol.Frame) error {
 		return reject()
 	}
 	var removed []uint16
-	cat := g.server.Characters
+	cat := g.catalog()
 	out, err := g.server.DB.ChangeTownQuest(ctx, g.lease, cat.Weights, func(c storage.Character, _ storage.Inventory, _ map[string]json.RawMessage) (storage.TownQuestMutation, error) {
 		m, ids, err := cat.Quests.Past(ctx, c, preview)
 		removed = ids
@@ -82,7 +82,7 @@ func (g *game) questTrainingManual(ctx context.Context, f protocol.Frame) error 
 	if !ok || phase != storage.Selected {
 		return nil
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	out, err := g.server.DB.ChangeQuest(ctx, g.lease, phase, cat.Weights, func(c storage.Character, in storage.Inventory, rs map[string]json.RawMessage) (storage.TownQuestMutation, error) {
 		return cat.Quests.TrainingManual(c, in, rs, now, func(d questwire.DuelObjective) bool {
@@ -109,7 +109,7 @@ func (g *game) autoCompleteDeliveryChildren(ctx context.Context) error {
 	if g.channel != 19 || g.opening != nil || g.ordinary.Active() || g.ordinary.Returning() {
 		return nil
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	opts := questwire.CompleteContext{ChangeContext: questwire.ChangeContext{Now: now, Lease: g.lease, HasNPC: g.questHasNPC},
 		GoldCarryLimits: cat.GoldCarryLimits, Growth: cat.OpeningCombat.ApplyQuestGrowth, FreeSkills: cat.OpeningCombat.QuestFreeSkills, SkillMaster: g.contracts[1] > now.Unix()}

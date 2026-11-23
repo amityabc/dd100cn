@@ -33,15 +33,15 @@ type growthCurve struct {
 	Branch, Stage int
 	Values        map[string]json.Number
 }
-type skillGrant struct {
-	ID                              uint16
+type AdvancementSkill struct {
+	ID                              uint16 `json:"Id"`
 	Level, RequiredLevel, Awakening byte
 	Active                          bool
 }
 type JobCombat struct {
 	Initial map[string]json.Number
 	Growth  []growthCurve
-	Grants  map[byte][]skillGrant
+	Grants  map[byte][]AdvancementSkill
 	Awards  []struct {
 		Level, Type   byte
 		ByPlayerLevel []uint32
@@ -135,7 +135,7 @@ type progress struct {
 	GrowType   byte
 	Hp         uint32
 }
-type skill struct {
+type LearnedSkill struct {
 	Id    uint16
 	Level byte
 	Slot  uint16
@@ -143,7 +143,7 @@ type skill struct {
 type object map[string]json.RawMessage
 
 func (j JobCombat) advanceSkills(obj object, level, grow byte) error {
-	var learned []skill
+	var learned []LearnedSkill
 	if err := json.Unmarshal(obj["Skills"], &learned); err != nil {
 		return err
 	}
@@ -151,10 +151,21 @@ func (j JobCombat) advanceSkills(obj object, level, grow byte) error {
 	if !ok {
 		return errors.New("missing skill grants for character branch")
 	}
-	eligible := map[uint16]skillGrant{}
+	result, err := AdvanceLearnedSkills(learned, table, level, grow)
+	if err != nil {
+		return err
+	}
+	obj["Skills"], err = json.Marshal(result)
+	return err
+}
+
+// AdvanceLearnedSkills applies profession grants to a newly created or saved skill page.
+func AdvanceLearnedSkills(current []LearnedSkill, table []AdvancementSkill, level, grow byte) ([]LearnedSkill, error) {
+	learned := append([]LearnedSkill{}, current...)
+	eligible := map[uint16]AdvancementSkill{}
 	for _, gr := range table {
 		if gr.ID == 0 || gr.Level == 0 {
-			return errors.New("invalid advancement skill")
+			return nil, errors.New("invalid advancement skill")
 		}
 		if gr.RequiredLevel <= level && gr.Awakening <= grow>>4 && gr.Level > eligible[gr.ID].Level {
 			eligible[gr.ID] = gr
@@ -165,7 +176,7 @@ func (j JobCombat) advanceSkills(obj object, level, grow byte) error {
 	for i, s := range learned {
 		_, dupe := index[s.Id]
 		if s.Id == 0 || s.Level == 0 || s.Slot > 254 || dupe || slots[s.Slot] {
-			return errors.New("invalid saved skill page")
+			return nil, errors.New("invalid saved skill page")
 		}
 		index[s.Id] = i
 		slots[s.Slot] = true
@@ -196,14 +207,13 @@ func (j JobCombat) advanceSkills(obj object, level, grow byte) error {
 			slot++
 		}
 		if slot > 254 {
-			return errors.New("native learned skill slots are full")
+			return nil, errors.New("native learned skill slots are full")
 		}
 		slots[slot] = true
-		learned = append(learned, skill{gr.ID, gr.Level, slot})
+		learned = append(learned, LearnedSkill{gr.ID, gr.Level, slot})
 	}
 	sort.Slice(learned, func(i, j int) bool { return learned[i].Id < learned[j].Id })
-	obj["Skills"], _ = json.Marshal(learned)
-	return nil
+	return learned, nil
 }
 
 func (cat *CombatCatalog) apply(c storage.Character, award uint32) (next storage.Character, p progress, actual uint32, err error) {

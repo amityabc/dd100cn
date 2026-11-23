@@ -14,10 +14,10 @@ func oculusEligible(c storage.Character, initialized bool, q resources.TownQuest
 }
 
 func (g *game) oculusPoint(mode uint16, area byte) (storage.Position, bool) {
-	if g.server.Characters.Dungeons == nil {
+	if g.catalog().Dungeons == nil {
 		return storage.Position{}, false
 	}
-	def, exists := g.server.Characters.Dungeons.Oculus[mode]
+	def, exists := g.catalog().Dungeons.Oculus[mode]
 	source := def.Rules.RecruitingArea
 	if area == 2 {
 		source = def.Rules.WaitingArea
@@ -58,7 +58,7 @@ func (g *game) moveOculus(r storage.Roster, x, y uint16) error {
 		return err
 	}
 	dest.X, dest.Y = x, y
-	if dest.Town != 81 || dest.Area != 1 && dest.Area != 2 || !g.server.Characters.AllowsOrdinaryTownPosition(c.Level, q, point(dest)) {
+	if dest.Town != 81 || dest.Area != 1 && dest.Area != 2 || !g.catalog().AllowsOrdinaryTownPosition(c.Level, q, point(dest)) {
 		return storage.ErrInvalid
 	}
 	g.oculus.position = &dest
@@ -100,7 +100,7 @@ func (g *game) travelOculus(r storage.Roster, req protocol.TownChange, reject fu
 	if replay {
 		src = g.oculusLast.from
 	}
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	if !catalog.AllowsOrdinaryTownPosition(c.Level, q, point(src)) || !catalog.AllowsOrdinaryTownPosition(c.Level, q, point(dest)) {
 		return reject()
 	}

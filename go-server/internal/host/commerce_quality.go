@@ -19,7 +19,7 @@ func (g *game) changeQuality(ctx context.Context, op uint16, body []byte) error 
 	if !g.commerceInTown() || g.ordinary.Selecting() {
 		return reject()
 	}
-	c := g.server.Characters.Commerce.Quality
+	c := g.catalog().Commerce.Quality
 	out, err := g.server.DB.Commerce(ctx, g.lease, op, g.seq, body, g.commerceState, func(x *storage.CommerceTx) error {
 		return x.ChangeQuality(q, c, time.Now())
 	})

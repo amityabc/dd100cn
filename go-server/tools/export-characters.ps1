@@ -4,19 +4,31 @@
     [string]$Pvf,
     [string]$Profile,
     [string]$Output,
-    [switch]$GmOnly
+    [switch]$GmOnly,
+    [switch]$Reference
 )
 $ErrorActionPreference = 'Stop'
 $project = Split-Path -Parent $PSScriptRoot
 $workspace = Split-Path -Parent $project
 $work = Join-Path $project '.work'
-if (-not $Dotnet) { $Dotnet = (Get-Command dotnet -ErrorAction Stop).Source }
 if (-not $LegacyOutput) { $LegacyOutput = Join-Path $workspace 'baseline/.work/source/Server/artifacts/bin/Serve100.Host/release' }
 if (-not $Pvf) { $Pvf = Join-Path $workspace '客户端/Script.pvf' }
 if (-not $Profile) { $Profile = Join-Path $workspace 's9a1/Server/Data/Pvf/Client100Profile.json' }
 if (-not $Output) {
-    $Output = Join-Path $work $(if ($GmOnly) { 'catalog/characters.gm.zip' } else { 'catalog/characters.json' })
+    $directory = if ($Reference) { 'catalog-reference' } else { 'catalog' }
+    $fileName = if ($GmOnly) { 'characters.gm.zip' } else { 'characters.json' }
+    $Output = Join-Path $work $directory $fileName
 }
+if (-not $Reference) {
+    $sourcePath = (Resolve-Path -LiteralPath $Pvf).Path
+    $profilePath = (Resolve-Path -LiteralPath $Profile).Path
+    $destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Output)
+    $section = if ($GmOnly) { 'gm' } else { 'all' }
+    & (Join-Path $PSScriptRoot 'go.ps1') run ./cmd/prepare-catalog -section $section -pvf $sourcePath -profile $profilePath -output $destination
+    if ($LASTEXITCODE -ne 0) { throw "Go catalog export failed ($section)" }
+    return
+}
+if (-not $Dotnet) { $Dotnet = (Get-Command dotnet -ErrorAction Stop).Source }
 $artifacts = Join-Path $work 'catalog-build'
 $settings = @{
     DOTNET_CLI_HOME = Join-Path $work 'dotnet-home'

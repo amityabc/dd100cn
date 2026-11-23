@@ -15,7 +15,7 @@ func (g *game) moveSpecialItem(ctx context.Context, q storage.MoveRequest, body 
 	if !g.commerceInTown() {
 		return reject()
 	}
-	c := g.server.Characters
+	c := g.catalog()
 	out, err := g.server.DB.Commerce(ctx, g.lease, 19, g.seq, body, g.commerceState, func(x *storage.CommerceTx) error {
 		return x.MoveSpecial(q, c.Commerce.AvatarClones, time.Now())
 	})

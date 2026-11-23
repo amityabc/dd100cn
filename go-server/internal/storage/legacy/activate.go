@@ -24,6 +24,8 @@ func (s *source) activationIssues(ctx context.Context) error {
 	for _, t := range r.Tables {
 		var known string
 		switch t.Name {
+		case "foundation_state":
+			known = "key value"
 		case "local_entry_accounts":
 			known = accountCols
 		case "local_account_premium":
@@ -80,6 +82,9 @@ func (s *source) activationIssues(ctx context.Context) error {
 		if found {
 			r.ActivationIssues = append(r.ActivationIssues, check.message)
 		}
+	}
+	if err := s.checkFoundation(ctx); err != nil {
+		return err
 	}
 	var bindings []byte
 	if err := s.tx.QueryRowContext(ctx, "SELECT oculus_guide_bindings_json FROM local_entry_accounts WHERE account='local'").Scan(&bindings); err != nil {
@@ -167,6 +172,9 @@ func (s *source) activate(ctx context.Context, db *sql.DB, account, originalDige
 	}
 	if n != 1 {
 		return errors.New("target account already exists, activation would overwrite its state")
+	}
+	if err = s.copyFoundation(ctx, tx, account, originalDigest); err != nil {
+		return err
 	}
 	if err = s.copyCharacterServiceDeadlines(ctx, tx, account); err != nil {
 		return err

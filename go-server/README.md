@@ -11,6 +11,7 @@
 .\go-server\tools\go.ps1 build -o bin/launcher.exe ./cmd/launcher
 .\go-server\tools\go.ps1 build -o bin/multiplayer-admin.exe ./cmd/multiplayer-admin
 .\go-server\tools\go.ps1 build -o bin/import-save.exe ./cmd/import-save
+.\go-server\tools\go.ps1 build -o bin/prepare-catalog.exe ./cmd/prepare-catalog
 .\go-server\tools\go.ps1 test ./... -run '^$'
 .\go-server\tools\go.ps1 test ./internal/protocol ./internal/questwire -run 'TestRegisteredRequestsMatchOriginalHost|TestDPLUpperTicketPreservesAwakeningAndAwardsScroll'
 ```
@@ -19,13 +20,13 @@
 
 ## 在隔离实例运行
 
-1. 按[旧服基线](../baseline/README.md)构建匹配的 C# 程序集。资源准备脚本使用 `-Dotnet` 选择 .NET 10 SDK，`-LegacyOutput` 可指定旧服 Release 目录。资源清单由匹配的 `Script.pvf`、`sk.dat` 和 profile 生成。准备完成后，Go 游戏服务直接读取生成的资源目录并核对原文件哈希。
+1. 用下方两条导出命令从配套的 `Script.pvf`、`sk.dat` 和 `Client100Profile.json` 生成玩法及 GM 目录。脚本默认使用 Go，将文件写入 `.work/catalog`。Go 服务启动时核对三份输入的哈希。
 2. 启动项目专用 PostgreSQL。脚本的 `-BinDirectory` 接收 PostgreSQL 的 `bin` 目录，默认只监听本机 56439。也可将自备 PostgreSQL 的连接串放在只供本机服务读取的文件里。
 3. 启动 Go 服务。开发入口自动分配回环端口，将就绪信息写入 `.work/instance/runtime/go-ready.json`。多人模式另外向 `-GatewayConfig` 给出的地址提供需要账号认证的 TLS 入口。
 
 ```powershell
-.\go-server\tools\export-characters.ps1 -Dotnet $sdk -LegacyOutput $legacyRelease
-.\go-server\tools\export-characters.ps1 -GmOnly -Dotnet $sdk -LegacyOutput $legacyRelease
+.\go-server\tools\export-characters.ps1
+.\go-server\tools\export-characters.ps1 -GmOnly
 .\go-server\tools\postgres\Test-Instance.ps1 -BinDirectory $pgBin
 .\go-server\tools\run.ps1 -DsnFile go-server/.work/postgres-storage/test-dsn.txt
 ```
@@ -34,7 +35,7 @@
 
 ## 旧存档与协议
 
-导入工具 `-mode inspect` 只读检查 SQLite 一致性备份，`stage` 将表和原始单元格存入 PostgreSQL 的暂存区，`activate` 按 `-account` 指定的账号实际启用可完整投影的旧数据。正式迁移前应在副本上读回角色、物品、钱包与收据。连接串通过进程环境 `S9A1_POSTGRES_DSN` 传给程序。
+导入工具 `-mode inspect` 只读检查 SQLite 一致性备份，`stage` 将表和原始单元格存入 PostgreSQL 的暂存区，`activate` 按 `-account` 指定的账号实际启用可完整投影的旧数据。导入器通过环境变量 `S9A1_DATABASE_URL` 读取目标连接串，游戏服务使用 `S9A1_POSTGRES_DSN` 或实例的 `runtime/postgres-dsn.txt`。正式迁移前可在副本上读回角色、物品、钱包与收据。
 
 ```powershell
 .\go-server\bin\import-save.exe -mode inspect -source $sqliteBackup
@@ -54,7 +55,22 @@ python -B go-server/tools/verify-town.py --measure-only --dsn-file $townDsnFile
 python -B go-server/tools/verify-town.py --combat --dsn-file $combatDsnFile
 ```
 
-资源目录当前为内部版本 4。匹配资源导出包括 1,807 个副本布局、37 个城镇副本入口、3 种洞察模式、7 个特殊奖励条目、19 个到期模板、43,408 项商品和 218 个任务券模板。旧资源缺少 45/M0、517/M0 的起点及 233/M0 的地图 17244。用 `export-characters.ps1` 重建资源目录。离线资源准备调用配套 C# 解析器，在线流程由 Go、PostgreSQL 和内嵌压缩模块承担。[资源导出](tools/catalog-export/) · [资源与验收范围](../docs/全量迁移清单.md)
+资源目录沿用内部版本 4。匹配资源包括 1,807 个副本布局、37 个城镇副本入口、3 种洞察模式、7 个特殊奖励条目、19 个到期模板、43,408 项城镇商品和 218 个任务券模板。旧资源缺少 45/M0、517/M0 的起点及 233/M0 的地图 17244。独立核验旧实现时，按旧服基线编译程序集，再运行导出脚本并附 `-Reference`，其默认输出目录为 `.work/catalog-reference`。`-Dotnet` 和 `-LegacyOutput` 可指定这个对照工具的 .NET SDK 和旧程序集目录。[Go 资源编译](cmd/prepare-catalog/) · [旧服基线](../baseline/README.md) · [资源与验收范围](../docs/全量迁移清单.md)
+
+Go 已具备命运抉择和街机两个资源分区的 PVF 解析器。对匹配的原始 PVF、`sk.dat` 和 profile 做离线核对，命运抉择的 25 个布局、30 个节点地图映射、24 个收集物及 5 个阶段奖励，以及街机的 576 条职业与模式定义，均与原 C# 导出逐项一致。[命运抉择准备](internal/catalogprep/fate/) · [街机准备](internal/catalogprep/arcade/)
+
+独立检查单个分区时，可从项目根目录执行下面的命令。省略 `-section` 时编译整份玩法目录。GM 使用 `-section gm` 生成配套 ZIP。[分区工具](cmd/prepare-catalog/) · [PVF 读取器](internal/pvf/)
+
+```powershell
+.\go-server\tools\go.ps1 run ./cmd/prepare-catalog -section openings -pvf '../客户端/Script.pvf' -profile '../s9a1/Server/Data/Pvf/Client100Profile.json' -output '.work/catalog-compare/openings.json'
+```
+
+准备好旧服参考目录后，可在项目根目录用 Python 3 的标准库核对两组文件。工具列出字段路径，出现差异时返回非零退出码。
+
+```powershell
+python -B go-server/tools/compare-catalog.py go-server/.work/catalog/characters.json go-server/.work/catalog-reference/characters.json
+python -B go-server/tools/compare-catalog.py go-server/.work/catalog/characters.gm.zip go-server/.work/catalog-reference/characters.gm.zip
+```
 
 ## 发布与旧启动入口
 

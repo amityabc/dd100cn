@@ -31,7 +31,7 @@ func (g *game) discardInventory(ctx context.Context, body []byte) error {
 		return reject()
 	}
 	now := time.Now()
-	catalog := g.server.Characters.Commerce
+	catalog := g.catalog().Commerce
 	replay := g.commerceState
 	if replay.Scene != scene {
 		replay = storage.CommerceReplay{}
@@ -80,7 +80,7 @@ func (g *game) disassembleInventory(ctx context.Context, body []byte) error {
 		return reject(0)
 	}
 	now := time.Now()
-	c := g.server.Characters
+	c := g.catalog()
 	out, err := g.server.DB.Commerce(ctx, g.lease, 26, g.seq, body, g.commerceState, func(x *storage.CommerceTx) error {
 		if !c.TownDisassembler(x.Character, q.NPC) {
 			return storage.ErrPhase

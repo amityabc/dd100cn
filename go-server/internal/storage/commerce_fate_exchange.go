@@ -18,7 +18,8 @@ type FateExchangeCatalog struct {
 }
 
 type FateExchangeShop struct {
-	NPC, Shop  uint32
+	NPC        uint32 `json:"Npc"`
+	Shop       uint32
 	Town, Area uint16
 }
 

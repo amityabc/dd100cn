@@ -122,7 +122,7 @@ func (g *game) oculusParty(ctx context.Context, op uint16, body []byte) error {
 	if err != nil {
 		return err
 	}
-	m, ok := g.server.Characters.Dungeons.Oculus[req.RaidMode]
+	m, ok := g.catalog().Dungeons.Oculus[req.RaidMode]
 	if !ok || !g.server.delegated || req.RaidType != 6 || req.Style != 0 || req.Dungeon != 0 || req.Difficulty != 5 || req.DetailWord != 0 || req.Detail != 0 ||
 		len(req.Title) > 128 || req.Options&0xf8 != 0 || (req.RaidMode == 0 && req.Capacity != 4) || (req.RaidMode != 0 && req.Capacity != 1) {
 		return g.oculusReject(op, "当前洞察之眼模式或建队选项不可用。")
@@ -241,7 +241,7 @@ func (g *game) oculusRequest(ctx context.Context, f protocol.Frame) error {
 		return err
 	}
 	o := &g.oculus
-	m, ok := g.server.Characters.Dungeons.Oculus[o.mode]
+	m, ok := g.catalog().Dungeons.Oculus[o.mode]
 	if !ok || !o.active || o.character != c.ID {
 		return g.oculusReject(f.Opcode, "请先创建洞察之眼队伍。")
 	}
@@ -292,7 +292,7 @@ func (g *game) oculusRequest(ctx context.Context, f protocol.Frame) error {
 
 func (g *game) oculusSelector(ctx context.Context, c storage.Character, a protocol.Actor, f protocol.Frame) error {
 	o := &g.oculus
-	m, ok := g.server.Characters.Dungeons.Oculus[o.mode]
+	m, ok := g.catalog().Dungeons.Oculus[o.mode]
 	if f.Opcode == 15 {
 		id, err := dungeon.ReadSelector(f.Body)
 		if err != nil {
@@ -398,10 +398,10 @@ func (g *game) projectOculusEntry(run *dungeon.Run, a protocol.Actor, loader boo
 }
 
 func (g *game) oculusMode() (dungeon.OculusMode, bool) {
-	if g.server.Characters.Dungeons == nil {
+	if g.catalog().Dungeons == nil {
 		return dungeon.OculusMode{}, false
 	}
-	mode, ok := g.server.Characters.Dungeons.Oculus[g.oculus.mode]
+	mode, ok := g.catalog().Dungeons.Oculus[g.oculus.mode]
 	return mode, ok
 }
 

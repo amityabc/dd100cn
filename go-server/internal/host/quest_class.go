@@ -20,6 +20,7 @@ func (g *game) questClassChange(ctx context.Context, f protocol.Frame) error {
 	if err != nil {
 		return err
 	}
+	var meta struct{ ClassReplacementCount byte }
 	var count byte
 	reply := func(code uint16) error {
 		var b []byte
@@ -35,21 +36,31 @@ func (g *game) questClassChange(ctx context.Context, f protocol.Frame) error {
 		}
 		return g.send(1, f.Opcode, b)
 	}
-	duel := duellobby.IsChannel(g.channel)
-	if f.Opcode == 494 && g.channel != 19 || g.opening != nil || g.ordinary.Active() || g.ordinary.Returning() ||
-		duel && (g.duelPosition == nil || g.arcade != nil && !g.arcade.Closed) {
+	rejectPhase := func() error {
+		if f.Opcode == 777 {
+			entry, err := g.server.DB.Current(ctx, g.lease)
+			if err != nil {
+				return err
+			}
+			if len(entry.Characters) != 0 {
+				if err := json.Unmarshal(entry.Characters[0].Gameplay, &meta); err != nil {
+					return err
+				}
+				count = meta.ClassReplacementCount
+			}
+		}
 		return reply(7)
 	}
-	cat := g.server.Characters
+	if f.Opcode == 494 && g.channel != 19 || g.opening != nil || g.ordinary.Active() || g.ordinary.Returning() ||
+		duellobby.IsChannel(g.channel) {
+		return rejectPhase()
+	}
+	cat := g.catalog()
 	var refusal error
 	now := time.Now()
 	opts := questwire.ClassChangeContext{Now: now, Tickets: cat.OpeningCombat.ClassTickets, SupportsBranch: cat.OpeningCombat.SupportsClassBranch,
 		FreeSkills: cat.OpeningCombat.QuestFreeSkills, Cost: cat.OpeningCombat.ClassReplacementCost, Stats: cat.OpeningCombat.ClassStats}
-	phase := storage.TownReady
-	if duel {
-		phase = storage.Selected
-	}
-	out, err := g.server.DB.ChangeQuest(ctx, g.lease, phase, cat.Weights, func(c storage.Character, in storage.Inventory, _ map[string]json.RawMessage) (storage.TownQuestMutation, error) {
+	out, err := g.server.DB.ChangeQuest(ctx, g.lease, storage.TownReady, cat.Weights, func(c storage.Character, in storage.Inventory, _ map[string]json.RawMessage) (storage.TownQuestMutation, error) {
 		if f.Opcode == 494 {
 			q, err := resources.ReadTownQuests(c.Gameplay)
 			if err != nil {
@@ -69,12 +80,11 @@ func (g *game) questClassChange(ctx context.Context, f protocol.Frame) error {
 		return plan, nil
 	})
 	if errors.Is(err, storage.ErrPhase) {
-		return reply(7)
+		return rejectPhase()
 	}
 	if err != nil {
 		return err
 	}
-	var meta struct{ ClassReplacementCount byte }
 	if err = json.Unmarshal(out.Character.Gameplay, &meta); err != nil {
 		return err
 	}
@@ -110,7 +120,7 @@ func (g *game) questClassChange(ctx context.Context, f protocol.Frame) error {
 			return err
 		}
 	}
-	if err = g.sendSkillBuild(c, duel, nil); err != nil {
+	if err = g.sendSkillBuild(c, false, nil); err != nil {
 		return err
 	}
 	if err = g.sendQuestBook(out); err != nil {

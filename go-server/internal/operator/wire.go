@@ -200,9 +200,17 @@ func Exchange(rw io.ReadWriter, body []byte) (Reply, error) {
 	if err != nil {
 		return Reply{}, err
 	}
-	var out Reply
+	var out *Reply
 	d := json.NewDecoder(bytes.NewReader(b))
 	d.DisallowUnknownFields()
-	err = d.Decode(&out)
-	return out, err
+	if err := d.Decode(&out); err != nil {
+		return Reply{}, err
+	}
+	if out == nil {
+		return Reply{}, errors.New("Operator response is absent")
+	}
+	if err := d.Decode(new(json.RawMessage)); err != io.EOF {
+		return Reply{}, errors.New("Operator response contains trailing data")
+	}
+	return *out, nil
 }

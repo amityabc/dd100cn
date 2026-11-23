@@ -52,7 +52,7 @@ func (g *game) dungeonRequest(ctx context.Context, f protocol.Frame) error {
 	}
 	ss := &g.ordinary
 	run := ss.Run
-	catalog := g.server.Characters.Dungeons
+	catalog := g.catalog().Dungeons
 	if f.Opcode == 15 || f.Opcode == 16 {
 		if err := g.specialCounters(ctx, c); err != nil {
 			return err
@@ -398,7 +398,7 @@ func (g *game) enterDungeon(ctx context.Context, body []byte, c storage.Characte
 	if !slices.Contains(catalog.AvailableFor(gate, access), req.Dungeon) {
 		return reject(4)
 	}
-	eligible, err := g.server.Characters.Quests.DungeonCandidatesFor(c, req.Dungeon, catalog.QuestCandidates(gate, req.Dungeon))
+	eligible, err := g.catalog().Quests.DungeonCandidatesFor(c, req.Dungeon, catalog.QuestCandidates(gate, req.Dungeon))
 	if err != nil {
 		return err
 	}
@@ -555,7 +555,7 @@ func (g *game) enterDungeon(ctx context.Context, body []byte, c storage.Characte
 }
 
 func (g *game) dungeonAccess(c storage.Character) (dungeon.Qualification, error) {
-	initialized, active, cleared, err := g.server.Characters.Quests.DungeonQualification(c)
+	initialized, active, cleared, err := g.catalog().Quests.DungeonQualification(c)
 	return dungeon.Qualification{Level: c.Level, Initialized: initialized, Active: active, Cleared: cleared}, err
 }
 
@@ -635,7 +635,7 @@ func (g *game) dungeonTownMotion(ctx context.Context, body []byte) error {
 		return err
 	}
 	ordinary, special, err := inventorywire.Town(in, c, inventorywire.Options{
-		Now: time.Now(), CashPolicies: g.server.Characters.CashPolicies, AccountPurchases: in.AccountPurchases,
+		Now: time.Now(), CashPolicies: g.catalog().CashPolicies, AccountPurchases: in.AccountPurchases,
 	})
 	if err != nil {
 		return err

@@ -18,8 +18,10 @@ func (g *game) repairEquipment(ctx context.Context, op uint16, body []byte) erro
 	oculus := g.channel == 63
 	run := g.ordinary.Run
 	if auto {
-		if !bytes.Equal(body, []byte{0, 255, 255, 255, 255, 1, 0}) || g.channel != 19 || g.opening != nil || g.ordinary.Returning() ||
-			run != nil && !run.Ready {
+		if !bytes.Equal(body, []byte{0, 255, 255, 255, 255, 1, 0}) {
+			return storage.ErrInvalid
+		}
+		if g.channel != 19 || g.opening != nil || g.ordinary.Returning() || run != nil && !run.Ready {
 			return reject()
 		}
 	} else if !oculus && (!g.commerceInTown() || g.ordinary.Selecting()) {
@@ -47,7 +49,7 @@ func (g *game) repairEquipment(ctx context.Context, op uint16, body []byte) erro
 	default:
 		return reject()
 	}
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	var source *storage.OculusRepairSource
 	verify := func(x *storage.CommerceTx) error {
 		if oculus {
@@ -78,13 +80,16 @@ func (g *game) repairEquipment(ctx context.Context, op uint16, body []byte) erro
 	if err != nil {
 		return err
 	}
-	bags, err := inventorywire.CommerceBags(out.Inventory, out.Character, true)
+	projection, err := inventorywire.BagAndWear(out.Inventory, out.Character)
 	if err != nil {
 		return err
 	}
-	gear, err := inventorywire.BagAndWear(out.Inventory, out.Character)
-	if err != nil {
-		return err
+	if !auto {
+		bags, err := inventorywire.CommerceBags(out.Inventory, out.Character, true)
+		if err != nil {
+			return err
+		}
+		projection = append(bags, projection[1])
 	}
 	body = le.AppendUint32([]byte{1}, uint32(out.Inventory.Gold))
 	body = le.AppendUint16(append(body, q.List), q.Slot)
@@ -93,7 +98,7 @@ func (g *game) repairEquipment(ctx context.Context, op uint16, body []byte) erro
 	if err = g.send(1, op, body); err != nil {
 		return err
 	}
-	if err = g.projected(append(bags, gear[1])); err != nil {
+	if err = g.projected(projection); err != nil {
 		return err
 	}
 	if auto {

@@ -91,8 +91,12 @@ type Profile struct {
 	Run                                     *Run
 }
 
+func NewProfile() Profile {
+	return Profile{Blessings: make([]int32, 7), Sins: make([]int32, 7), EquippedEffects: make([]int32, 3), DailyClaims: []string{}}
+}
+
 func Read(data json.RawMessage) (Profile, error) {
-	p := Profile{Blessings: make([]int32, 7), Sins: make([]int32, 7), EquippedEffects: make([]int32, 3), DailyClaims: []string{}}
+	p := NewProfile()
 	var g struct{ Fate json.RawMessage }
 	if err := json.Unmarshal(data, &g); err != nil {
 		return p, err

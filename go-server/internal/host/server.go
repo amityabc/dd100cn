@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,7 +25,10 @@ import (
 
 type Server struct {
 	DB                                               *storage.Store
-	Characters                                       *resources.CharacterCatalog
+	itemsCatalog                                     atomic.Pointer[resources.CharacterCatalog]
+	gmPreparation                                    sync.Mutex
+	gmPrepared                                       map[uint32]struct{}
+	pvfPath, profilePath                             string
 	catalog                                          protocol.ChannelCatalog
 	maxFrame                                         int
 	readChunk, receiveQueue, sendQueue, sessionQueue int
@@ -91,10 +95,13 @@ func New(c config.Config, db *storage.Store, templates *resources.CharacterCatal
 	}
 	nativeParty := c.Gameplay.NativePartyNotices == nil || *c.Gameplay.NativePartyNotices
 	db.BindDailyExpiry(templates.Commerce.DailyExpiryTemplates)
-	return &Server{DB: db, Characters: templates, catalog: catalog, maxFrame: c.Server.MaximumFrameBytes,
+	s := &Server{DB: db, catalog: catalog, maxFrame: c.Server.MaximumFrameBytes, gmPrepared: make(map[uint32]struct{}),
+		pvfPath: c.Path(c.Resources.Pvf), profilePath: c.Path(c.Resources.ClientProfile),
 		readChunk: c.Server.ReceiveChunkBytes, receiveQueue: c.Server.ReceiveQueueCapacity, sendQueue: c.Server.SendQueueCapacity, sessionQueue: c.Server.SessionQueueCapacity,
 		native140: c.Gameplay.NativeTownProfile140, nativeParty: nativeParty, delegated: c.Gameplay.ClientDelegatedCombatEnabled,
-		slots: make(chan struct{}, c.Server.MaximumConnections), active: make(map[string]*connection), gmAccounts: c.Gameplay.GmAccounts, outbox: operator.Outbox{Root: c.Root}}, nil
+		slots: make(chan struct{}, c.Server.MaximumConnections), active: make(map[string]*connection), gmAccounts: c.Gameplay.GmAccounts, outbox: operator.Outbox{Root: c.Root}}
+	s.itemsCatalog.Store(templates)
+	return s, nil
 }
 
 type Ports struct {
@@ -291,11 +298,8 @@ func (s *Server) ServeConnection(parent context.Context, conn net.Conn, account 
 }
 
 func (g *game) serveFrames(ctx context.Context, p *connection) error {
-	type readResult struct {
-		frame protocol.Frame
-		err   error
-	}
-	frames := make(chan readResult, g.server.receiveQueue)
+	frames := make(chan protocol.Frame, g.server.receiveQueue)
+	readErr := make(chan error, 1)
 	readerDone := make(chan struct{})
 	reading, stop := context.WithCancel(ctx)
 	defer func() { stop(); g.conn.Close(); <-readerDone }()
@@ -303,16 +307,26 @@ func (g *game) serveFrames(ctx context.Context, p *connection) error {
 		defer close(readerDone)
 		for {
 			frame, err := protocol.ReadFrameLimited(g.conn, protocol.Game, protocol.ClientToServer, g.server.maxFrame)
-			select {
-			case frames <- readResult{frame, err}:
-			case <-reading.Done():
+			if err != nil {
+				readErr <- err
+				p.cancel()
 				return
 			}
-			if err != nil {
+			select {
+			case frames <- frame:
+			case <-reading.Done():
 				return
 			}
 		}
 	}()
+	closedError := func() error {
+		select {
+		case err := <-readErr:
+			return err
+		default:
+			return ctx.Err()
+		}
+	}
 	var timer *time.Timer
 	defer func() {
 		if timer != nil {
@@ -337,26 +351,33 @@ func (g *game) serveFrames(ctx context.Context, p *connection) error {
 		}
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return closedError()
 		case <-tick:
 			p.serial.Lock()
+			if ctx.Err() != nil {
+				p.serial.Unlock()
+				return closedError()
+			}
+			g.frameCatalog = g.server.itemsCatalog.Load()
 			err := g.dungeonTick(ctx)
+			g.frameCatalog = nil
 			p.serial.Unlock()
 			if err != nil {
 				return err
 			}
-		case received := <-frames:
-			if received.err != nil {
-				return received.err
-			}
-			f := received.frame
+		case f := <-frames:
 			g.server.recordFrame(g.conn, g.observationID, "Received", f)
 			if !protocol.RegisteredRequest(f, g.server.delegated) {
 				g.server.recordFrame(g.conn, g.observationID, "UnsupportedOpcode", f)
 				continue
 			}
 			p.serial.Lock()
+			if ctx.Err() != nil {
+				p.serial.Unlock()
+				return closedError()
+			}
 			g.seq = f.Sequence
+			g.frameCatalog = g.server.itemsCatalog.Load()
 			request, reads := storage.TrackInventoryProjection(ctx)
 			g.inventoryFrame = &inventoryFrame{reads: reads}
 			pause := f.Opcode == 3 || f.Opcode == 7 || f.Opcode == 8
@@ -391,6 +412,7 @@ func (g *game) serveFrames(ctx context.Context, p *connection) error {
 				err = g.syncPetClock(ctx, false, f.Opcode == 44)
 			}
 			g.inventoryFrame = nil
+			g.frameCatalog = nil
 			p.serial.Unlock()
 			if err != nil {
 				return fmt.Errorf("game opcode %d sequence %d: %w", f.Opcode, f.Sequence, err)

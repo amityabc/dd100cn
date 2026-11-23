@@ -17,6 +17,25 @@ type pastQuest struct {
 	QuestionChoices byte
 }
 
+func (q pastQuest) MarshalJSON() ([]byte, error) {
+	// The past-quest directory exposes only the eligibility fields used when
+	// skipping an older story tree.
+	return json.Marshal(struct {
+		Id, Parent           uint16
+		Level                byte
+		Job, Grow, Awakening int
+		Epic                 bool
+		Children, Collisions []uint16
+		Required             [][]uint16
+		Answers              []AnswerRequirement
+		Targets, NonTargets  []Target
+		Hash                 string
+		QuestionChoices      byte
+	}{
+		q.Id, q.Parent, q.Level, q.Job, q.Grow, q.Awakening, q.Epic,
+		q.Children, q.Collisions, q.Required, q.Answers, q.Targets, q.NonTargets, q.Hash, q.QuestionChoices,
+	})
+}
 func (catalog *Catalog) Past(ctx context.Context, c storage.Character, preview bool) (storage.TownQuestMutation, []uint16, error) {
 	var out storage.TownQuestMutation
 	p, err := playerOf(c)

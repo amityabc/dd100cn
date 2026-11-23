@@ -120,9 +120,9 @@ func (g *game) dungeonMonsterDeathAuthorized(ctx context.Context, run *dungeon.R
 		var hash string
 		var err error
 		if death.ScriptQuest != 0 {
-			id, hash, err = g.server.Characters.Quests.ActiveDungeonScriptQuestProof(c, def.ID, def.QuestConnections, death.ScriptQuest)
+			id, hash, err = g.catalog().Quests.ActiveDungeonScriptQuestProof(c, def.ID, def.QuestConnections, death.ScriptQuest)
 		} else {
-			id, hash, err = g.server.Characters.Quests.ActiveDungeonQuestProof(c, def.ID, def.QuestConnections)
+			id, hash, err = g.catalog().Quests.ActiveDungeonQuestProof(c, def.ID, def.QuestConnections)
 		}
 		if err != nil {
 			return err
@@ -161,28 +161,28 @@ func (g *game) dungeonMonsterDeathAuthorized(ctx context.Context, run *dungeon.R
 	} else {
 		var actual uint32
 		if !death.Removal {
-			next, actual, err = g.server.Characters.OpeningCombat.ApplyExperience(c, death.Award)
+			next, actual, err = g.catalog().OpeningCombat.ApplyExperience(c, death.Award)
 			if err != nil {
 				return err
 			}
 		}
 		result = run.Result(death, actual)
-		drops := &g.server.Characters.Dungeons.Drops
+		drops := &g.catalog().Dungeons.Drops
 		result.Drops = []dungeon.GroundDrop{}
 		if !death.Removal {
-			result.FirstHunt = g.server.Characters.Dungeons.FirstHunt(run, death)
+			result.FirstHunt = g.catalog().Dungeons.FirstHunt(run, death)
 			if result.FirstHunt != nil && result.FirstHunt.Kind != 0 {
 				receipts, err := g.server.DB.Receipts(ctx, g.lease)
 				if err != nil {
 					return err
 				}
-				if err := g.server.Characters.Dungeons.ReadFirstHunt(result.FirstHunt, c, g.lease.Account, receipts); err != nil {
+				if err := g.catalog().Dungeons.ReadFirstHunt(result.FirstHunt, c, g.lease.Account, receipts); err != nil {
 					return err
 				}
 			}
 			if !def.DisableDrops && def.UsesOrdinaryMonsterDrops && (def.UsesOrdinaryRewards || def.Difficulty != 0) &&
 				death.Monster.AiScriptIndex == nil && death.Monster.BlocksRoom && !death.Monster.Dummy && death.Monster.HellPhase == 0 && drops.MonsterAllowsItems(death.Monster.Code) {
-				result.Luck, err = g.server.Characters.Dungeons.Luck.Start(c)
+				result.Luck, err = g.catalog().Dungeons.Luck.Start(c)
 				if err != nil {
 					return err
 				}
@@ -205,7 +205,7 @@ func (g *game) dungeonMonsterDeathAuthorized(ctx context.Context, run *dungeon.R
 			result.ApcIndependentPolicy = &dungeon.ApcIndependentProof{Policy: "PVFApcIndependent/hostile-generated-solo;owner1;no-ordinary-random-channels/v1", SourceHash: result.DropRuleHash}
 		}
 		if !gm && drops.MonsterAllowsItems(death.Monster.Code) && binary.LittleEndian.Uint16(body[4:]) == c.ID {
-			if err := g.server.Characters.Dungeons.WorldDrops.Plan(run, death, &result); err != nil {
+			if err := g.catalog().Dungeons.WorldDrops.Plan(run, death, &result); err != nil {
 				return err
 			}
 		}
@@ -219,7 +219,7 @@ func (g *game) dungeonMonsterDeathAuthorized(ctx context.Context, run *dungeon.R
 				if err != nil {
 					return err
 				}
-				if err = g.server.Characters.Dungeons.PlanOculusBoss(run, mode, death, &result, used, admission, time.Now()); err != nil {
+				if err = g.catalog().Dungeons.PlanOculusBoss(run, mode, death, &result, used, admission, time.Now()); err != nil {
 					return err
 				}
 			}
@@ -236,7 +236,7 @@ func (g *game) dungeonMonsterDeathAuthorized(ctx context.Context, run *dungeon.R
 			result.QuestDrop = questItems.receipt
 			questChanged = questItems.receipt.HasGrants()
 		}
-		quests := g.server.Characters.Quests
+		quests := g.catalog().Quests
 		questTarget := !death.Removal || death.Cinematic != nil && death.Monster.Type == 3
 		if !questTarget && death.Monster.Type == 3 {
 			questTarget, err = quests.HasDungeonHuntTarget(c, def.ID, def.Difficulty, []opening.Monster{death.Monster})
@@ -308,7 +308,7 @@ func (g *game) dungeonMonsterDeathAuthorized(ctx context.Context, run *dungeon.R
 		StormCleanup            *dungeon.StormDeathProof  `json:",omitempty"`
 	}{source, version, savejson.String(g.lease.Account), g.lease.Owner, g.lease.Epoch, c.ID, run.ID, def.ID,
 		def.MazeIndex, room.X, room.Y, room.MapID, result.Maps, death.Actor, m.Code, m.Level, m.Type, m.BlocksRoom,
-		def.ResourceHash, multiplier, run.RewardLevel, g.server.Characters.Dungeons.ExperienceHash, death.Award, class, opcode, savejson.String(base64.StdEncoding.EncodeToString(death.Body)),
+		def.ResourceHash, multiplier, run.RewardLevel, g.catalog().Dungeons.ExperienceHash, death.Award, class, opcode, savejson.String(base64.StdEncoding.EncodeToString(death.Body)),
 		death.CleanupBoss, death.Companion, death.Summon, m.AiScriptIndex, m.Dummy, script, death.Storm})
 	if err != nil {
 		return err
@@ -319,7 +319,7 @@ func (g *game) dungeonMonsterDeathAuthorized(ctx context.Context, run *dungeon.R
 	}
 	write := storage.DungeonChange{Key: death.Key, Input: string(input), Result: string(frozen),
 		Next: next, ExperienceAward: result.ExperienceAward, Replay: death.Prior != nil, Proof: run.DeathDependencyKeys(death.Dependencies), Summon: death.Summon}
-	write.PetGrowth = run.PetGrowthProof(death, result, g.server.Characters.Quests.PetGrowthRule(), time.Now())
+	write.PetGrowth = run.PetGrowthProof(death, result, g.catalog().Quests.PetGrowthRule(), time.Now())
 	write.BattlePassEligible = death.Prior == nil && !gm && !run.InLayer && !death.Removal && death.Companion == 0 && death.Summon == nil &&
 		!death.Monster.Dummy && death.Monster.AiScriptIndex == nil && binary.LittleEndian.Uint16(body[4:]) == c.ID
 	questItems.attach(&write)
@@ -330,7 +330,7 @@ func (g *game) dungeonMonsterDeathAuthorized(ctx context.Context, run *dungeon.R
 		write.Wisdom = run.WisdomEntry
 	}
 	if run.RubyEntry != nil {
-		bindRubyDeath(run, result, &write, g.server.Characters.Dungeons.Ruby)
+		bindRubyDeath(run, result, &write, g.catalog().Dungeons.Ruby)
 	}
 	if run.OculusEntry != nil {
 		write.Proof = append(write.Proof, run.OculusEntry.Key())
@@ -481,7 +481,7 @@ func (g *game) dungeonPassiveDeath(ctx context.Context, run *dungeon.Run, c stor
 		return nil
 	}
 	def := run.Definition.Dungeon
-	catalog := g.server.Characters.Quests
+	catalog := g.catalog().Quests
 	next := c
 	result := death.PriorResult
 	var items dungeonQuestGrantPlan
@@ -496,7 +496,7 @@ func (g *game) dungeonPassiveDeath(ctx context.Context, run *dungeon.Run, c stor
 		if err != nil {
 			return err
 		}
-		drops := &g.server.Characters.Dungeons.Drops
+		drops := &g.catalog().Dungeons.Drops
 		ground, object, err := drops.ObjectDrops(run, death, time.Now())
 		if err != nil {
 			return err
@@ -612,7 +612,7 @@ func (g *game) dungeonEmptyClear(ctx context.Context, run *dungeon.Run, c storag
 	if !ok || !g.server.delegated {
 		return c, false, nil
 	}
-	cat := g.server.Characters.Quests
+	cat := g.catalog().Quests
 	def := run.Definition.Dungeon
 	target, err := cat.HasDungeonHuntTarget(c, def.ID, def.Difficulty, run.Room.Monsters)
 	if err != nil || target {
@@ -655,7 +655,7 @@ func (g *game) dungeonQuestProjection(ctx context.Context, c storage.Character) 
 	if err != nil {
 		return err
 	}
-	frames, err := g.server.Characters.Quests.ProjectScene(c, in, receipts, true)
+	frames, err := g.catalog().Quests.ProjectScene(c, in, receipts, true)
 	if err != nil {
 		return err
 	}

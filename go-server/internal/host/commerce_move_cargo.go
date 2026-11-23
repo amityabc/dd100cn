@@ -15,7 +15,7 @@ func (g *game) moveContainerItem(ctx context.Context, q storage.MoveRequest, bod
 	if !g.commerceInTown() {
 		return reject()
 	}
-	c := g.server.Characters
+	c := g.catalog()
 	out, err := g.server.DB.Commerce(ctx, g.lease, 19, g.seq, body, g.commerceState, func(x *storage.CommerceTx) error {
 		if err := x.MoveContainer(q, time.Now()); err != nil {
 			return err

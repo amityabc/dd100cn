@@ -23,7 +23,7 @@ func (g *game) sortInventory(ctx context.Context, body []byte) error {
 	if !g.commerceInTown() {
 		return reject()
 	}
-	catalog := g.server.Characters.Commerce.SortMetadata
+	catalog := g.catalog().Commerce.SortMetadata
 	out, err := g.server.DB.Commerce(ctx, g.lease, 20, g.seq, body, g.commerceState, func(x *storage.CommerceTx) error {
 		return x.Sort(q, catalog)
 	})

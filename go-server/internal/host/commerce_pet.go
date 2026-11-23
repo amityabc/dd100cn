@@ -16,7 +16,7 @@ import (
 
 func (g *game) petInventory(in storage.Inventory, c storage.Character) ([]inventorywire.Packet, error) {
 	return inventorywire.CommerceSpecialWith(in, c, inventorywire.Options{
-		Now: time.Now(), PetDefaultName: g.server.Characters.Commerce.PetDefaultName,
+		Now: time.Now(), PetDefaultName: g.catalog().Commerce.PetDefaultName,
 	})
 }
 
@@ -29,7 +29,7 @@ func (g *game) hatchPet(ctx context.Context, b []byte) error {
 		return reject()
 	}
 	slot := binary.LittleEndian.Uint16(b[1:])
-	c := g.server.Characters.Commerce
+	c := g.catalog().Commerce
 	out, err := g.server.DB.Commerce(ctx, g.lease, 102, g.seq, b, g.commerceState, func(x *storage.CommerceTx) error {
 		return x.HatchPet(slot, c.PetHatch, time.Now())
 	})
@@ -74,7 +74,7 @@ func (g *game) renamePet(ctx context.Context, b []byte) error {
 		return storage.ErrInvalid
 	}
 	slot := le.Uint16(b)
-	c := g.server.Characters.Commerce
+	c := g.catalog().Commerce
 	out, err := g.server.DB.Commerce(ctx, g.lease, 100, g.seq, b, g.commerceState, func(x *storage.CommerceTx) error {
 		return x.RenamePet(slot, name, c.PetRenameCard, c.PetNames, time.Now())
 	})

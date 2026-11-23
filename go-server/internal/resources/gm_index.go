@@ -108,7 +108,41 @@ func LoadGMIndex(pack, pvf, profile, cache string) (GmIndex, error) {
 	} else if !m.Unprofiled {
 		return out, errors.New("封装PVF需要显式外部 Resources:ClientProfile")
 	}
-	if err = os.MkdirAll(filepath.Dir(cache), 0700); err != nil {
+	return LoadGMDisplayCache(cache, m.PvfSha256, effectiveHash, m.Parser, func() ([]GmCatalogItem, error) {
+		f, err := z.Open("item-index.json")
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		d, err := readGMIndexSnapshot(f)
+		if err != nil {
+			return nil, err
+		}
+		if !d.valid() || d.Source != m.PvfSha256 || d.Profile != m.ProfileSha256 || !strings.EqualFold(d.Parser, m.Parser) {
+			return nil, errors.New("GM item index differs from its prepared inputs")
+		}
+		return d.Items, nil
+	})
+}
+
+func readGMIndexSnapshot(r io.Reader) (gmIndexSnapshot, error) {
+	var d gmIndexSnapshot
+	b, err := io.ReadAll(io.LimitReader(r, (256<<20)+1))
+	if err != nil {
+		return d, err
+	}
+	if len(b) > 256<<20 {
+		return d, errors.New("GM item index file exceeds its resource capacity")
+	}
+	err = json.Unmarshal(b, &d)
+	return d, err
+}
+
+// LoadGMDisplayCache reuses the legacy display snapshot for a verified input
+// pair or builds it while holding the cache lock.
+func LoadGMDisplayCache(cache, sourceHash, profileHash, parser string, build func() ([]GmCatalogItem, error)) (GmIndex, error) {
+	var out GmIndex
+	if err := os.MkdirAll(filepath.Dir(cache), 0700); err != nil {
 		return out, err
 	}
 	lock, err := filelock.Open(cache + ".lock")
@@ -116,38 +150,21 @@ func LoadGMIndex(pack, pvf, profile, cache string) (GmIndex, error) {
 		return out, err
 	}
 	defer lock.Close()
-	read := func(r io.Reader) (gmIndexSnapshot, error) {
-		var d gmIndexSnapshot
-		b, err := io.ReadAll(io.LimitReader(r, (256<<20)+1))
-		if err != nil {
-			return d, err
-		}
-		if len(b) > 256<<20 {
-			return d, errors.New("GM item index file exceeds its resource capacity")
-		}
-		err = json.Unmarshal(b, &d)
-		return d, err
-	}
 	if f, err := os.Open(cache); err == nil {
-		d, err := read(f)
+		d, err := readGMIndexSnapshot(f)
 		f.Close()
-		if err == nil && d.Source == m.PvfSha256 && d.Profile == effectiveHash && strings.EqualFold(d.Parser, m.Parser) && d.valid() {
+		if err == nil && d.Source == sourceHash && d.Profile == profileHash && strings.EqualFold(d.Parser, parser) && d.valid() {
 			return GmIndex{d.Items, d.Source, true}, nil
 		}
 	}
-	f, err := z.Open("item-index.json")
+	rows, err := build()
 	if err != nil {
 		return out, err
 	}
-	defer f.Close()
-	d, err := read(f)
-	if err != nil {
-		return out, err
+	d := gmIndexSnapshot{1, sourceHash, profileHash, parser, rows}
+	if !d.valid() {
+		return out, errors.New("GM item index exceeds its resource capacity or has invalid rows")
 	}
-	if !d.valid() || d.Source != m.PvfSha256 || d.Profile != m.ProfileSha256 || !strings.EqualFold(d.Parser, m.Parser) {
-		return out, errors.New("GM item index differs from its prepared inputs")
-	}
-	d.Profile = effectiveHash
 	tmp, err := os.CreateTemp(filepath.Dir(cache), ".item-index-*.tmp")
 	if err != nil {
 		return out, err

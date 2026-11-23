@@ -53,7 +53,7 @@ func (g *game) fateControl(ctx context.Context, f protocol.Frame) error {
 		}
 		return nil
 	}
-	def := g.server.Characters.Fate
+	def := g.catalog().Fate
 	if def == nil || g.ordinary.Returning() {
 		return reject()
 	}
@@ -62,7 +62,7 @@ func (g *game) fateControl(ctx context.Context, f protocol.Frame) error {
 	}
 	var next fate.Profile
 	rank := f.Opcode == 681
-	out, err := g.server.DB.ChangeFateActivity(ctx, g.lease, g.server.Characters.Weights, false, func(c storage.Character, in storage.Inventory, _ map[string]json.RawMessage) (storage.TownQuestMutation, error) {
+	out, err := g.server.DB.ChangeFateActivity(ctx, g.lease, g.catalog().Weights, false, func(c storage.Character, in storage.Inventory, _ map[string]json.RawMessage) (storage.TownQuestMutation, error) {
 		var m storage.TownQuestMutation
 		before, err := fate.Read(c.Gameplay)
 		if err != nil {

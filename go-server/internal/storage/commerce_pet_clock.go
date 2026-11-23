@@ -10,16 +10,21 @@ import (
 )
 
 type PetCareRule struct {
-	TemplateID                   uint32
-	EquipmentHash, CommonHash    string
-	SpendSeconds, RecoverSeconds uint32
-	MaximumSatiety, MaximumLevel byte
+	TemplateID                                                          uint32 `json:"TemplateId"`
+	EquipmentHash, CommonHash                                           string
+	SpendSeconds, RecoverSeconds                                        uint32
+	MaximumSatiety, MaximumLevel                                        byte
+	SpeciesId                                                           uint32
+	SpeciesHash                                                         string
+	StartLevel, PermissionLevel, OverskillLevel, AutomaticFeedThreshold byte
 }
 
 type PetFeedRule struct {
 	Source                           json.RawMessage
 	MinimumPetLevel, SatietyRecovery byte
 	CooldownMilliseconds             uint32
+	NativeBuffSeconds                uint32
+	NativeChargePercent              int
 }
 
 type PetClockMode byte
@@ -90,6 +95,63 @@ func (s *Store) SyncPetClock(ctx context.Context, l Lease, rule *PetCareRule, mo
 		_, err = saveMailCharacter(ctx, tx, l.Account, x.Character)
 		return updates, err
 	})
+}
+
+// Disconnection freezes clocks owned by the lease using their saved rates.
+func freezePetClocks(c *Character, l Lease, now time.Time) (bool, error) {
+	x := CommerceTx{Character: *c}
+	state, items, _, err := x.loadSpecial()
+	if err != nil {
+		return false, err
+	}
+	changed := false
+	for i, raw := range items {
+		var row map[string]json.RawMessage
+		if err = json.Unmarshal(raw, &row); err != nil {
+			return false, err
+		}
+		if !hasEffect(row["Pet"]) {
+			continue
+		}
+		var pet map[string]json.RawMessage
+		if err = json.Unmarshal(row["Pet"], &pet); err != nil {
+			return false, err
+		}
+		clock, err := rawPetValue[*savedPetClock](pet, "SatietyClock")
+		if err != nil {
+			return false, err
+		}
+		if clock == nil || clock.Epoch != l.Epoch || clock.Mode == PetPaused ||
+			!strings.EqualFold(strings.ReplaceAll(clock.Owner, "-", ""), strings.ReplaceAll(l.Owner, "-", "")) {
+			continue
+		}
+		value, err := petClockValue(*clock, now.UnixMilli())
+		if err != nil {
+			return false, err
+		}
+		clock.Baseline, clock.SinceMilliseconds, clock.Mode = value, now.UnixMilli(), PetPaused
+		if err = setPetValue(pet, "Satiety", byte(value)); err != nil {
+			return false, err
+		}
+		if err = setPetValue(pet, "SatietyClock", clock); err != nil {
+			return false, err
+		}
+		if err = setPetValue(row, "Pet", pet); err != nil {
+			return false, err
+		}
+		items[i], err = json.Marshal(row)
+		if err != nil {
+			return false, err
+		}
+		changed = true
+	}
+	if !changed {
+		return false, nil
+	}
+	if err = setPetValue(state, "Items", items); err != nil {
+		return false, err
+	}
+	return true, replaceMailFields(c, map[string]any{"SpecialAssets": state})
 }
 
 func (x *CommerceTx) advancePetClock(rule *PetCareRule, mode PetClockMode, now time.Time) ([]PetSatiety, bool, error) {

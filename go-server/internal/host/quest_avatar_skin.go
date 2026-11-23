@@ -59,7 +59,7 @@ func (g *game) unlockSkinSlot(ctx context.Context, op, source, target uint16, li
 	if !g.commerceInTown() {
 		return reject(false)
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	out, err := g.server.DB.Commerce(ctx, g.lease, op, g.seq, nil, storage.CommerceReplay{}, func(x *storage.CommerceTx) error {
 		return x.UnlockSkinSlot(source, target, cat.Quests.AvatarEdits(), now)

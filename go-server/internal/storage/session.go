@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+	"time"
 )
 
 // Acquire is called only after the entry layer resolves an authenticated
@@ -24,8 +25,33 @@ func (s *Store) Acquire(ctx context.Context, account string) (Lease, error) {
 }
 
 func (s *Store) Release(ctx context.Context, l Lease) error {
-	_, err := s.db.ExecContext(ctx, `UPDATE s9a1.accounts SET owner=NULL,selected_id=NULL,phase=5
-		WHERE account=$1 AND owner=$2::uuid AND epoch=$3`, l.Account, l.Owner, l.Epoch)
+	_, err := writeTx(ctx, s.db, func(tx *sql.Tx) (struct{}, error) {
+		r, err := lockAccount(ctx, tx, l, true)
+		if errors.Is(err, ErrLease) {
+			return struct{}{}, nil
+		}
+		if err != nil {
+			return struct{}{}, err
+		}
+		if r.SelectedID != 0 {
+			c, err := mailCharacter(ctx, tx, l.Account, r.SelectedID)
+			if err != nil {
+				return struct{}{}, err
+			}
+			changed, err := freezePetClocks(&c, l, time.Now())
+			if err != nil {
+				return struct{}{}, err
+			}
+			if changed {
+				if _, err = saveMailCharacter(ctx, tx, l.Account, c); err != nil {
+					return struct{}{}, err
+				}
+			}
+		}
+		_, err = tx.ExecContext(ctx, `UPDATE s9a1.accounts SET owner=NULL,selected_id=NULL,phase=5
+			WHERE account=$1 AND owner=$2::uuid AND epoch=$3`, l.Account, l.Owner, l.Epoch)
+		return struct{}{}, err
+	})
 	return err
 }
 

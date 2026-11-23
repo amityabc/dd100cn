@@ -39,7 +39,7 @@ func (g *game) questMenu(ctx context.Context, c storage.Character, in storage.In
 	if err != nil {
 		return nil, err
 	}
-	bodies, err := g.server.Characters.Quests.Project(c, in, receipts)
+	bodies, err := g.catalog().Quests.Project(c, in, receipts)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (g *game) projectSpecialCounters(ctx context.Context, c storage.Character, 
 	if err != nil {
 		return err
 	}
-	body, err := rewardcount.Body(c, receipts, g.server.Characters.DailyLimits, now)
+	body, err := rewardcount.Body(c, receipts, g.catalog().DailyLimits, now)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (g *game) projectSpecialCounters(ctx context.Context, c storage.Character, 
 		if err != nil {
 			return err
 		}
-		weekly := g.server.Characters.Dungeons.OculusCards
+		weekly := g.catalog().Dungeons.OculusCards
 		if len(weekly) != 0 {
 			if len(weekly) != 3 {
 				return storage.ErrInvalid
@@ -108,7 +108,7 @@ func (g *game) projectSpecialCounters(ctx context.Context, c storage.Character, 
 	if err := g.packets(frames); err != nil || announcement == 0 {
 		return err
 	}
-	if source, ok := g.server.Characters.Dungeons.SpecialRewards[announcement]; ok {
+	if source, ok := g.catalog().Dungeons.SpecialRewards[announcement]; ok {
 		announcement = source.Counter
 	}
 	for at := 1; at+5 <= len(body); at += 5 {
@@ -150,6 +150,12 @@ func (g *game) syncTown(ctx context.Context, op uint16, body []byte) error {
 	if err != nil {
 		return err
 	}
+	if r.Phase == storage.Selected {
+		c, err = g.prepareSelectedGameplay(ctx, c, time.Now())
+		if err != nil {
+			return err
+		}
+	}
 	if duellobby.IsChannel(g.channel) {
 		return g.syncDuel(ctx, op, r, c)
 	}
@@ -177,7 +183,7 @@ func (g *game) syncTown(ctx context.Context, op uint16, body []byte) error {
 	var def opening.Definition
 	if pending {
 		var exists bool
-		def, exists = g.server.Characters.Openings[c.Job]
+		def, exists = g.catalog().Openings[c.Job]
 		if !exists {
 			return storage.ErrInvalid
 		}
@@ -316,6 +322,7 @@ func (g *game) syncTown(ctx context.Context, op uint16, body []byte) error {
 		return err
 	}
 	g.nextActor, g.opening = next, run
+	g.trackDungeonLuck()
 	return g.packets(frames)
 }
 
@@ -323,7 +330,7 @@ type loadPackets struct{ beforeCounts, afterCounts []opening.Packet }
 
 func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.Character, in storage.Inventory, a protocol.Actor, p actorProfile, op uint16, ack []byte, pending bool) (loadPackets, error) {
 	var result loadPackets
-	ordinary, special, err := inventorywire.Town(in, c, inventorywire.Options{Now: time.Now(), CashPolicies: g.server.Characters.CashPolicies, AccountPurchases: in.AccountPurchases})
+	ordinary, special, err := inventorywire.Town(in, c, inventorywire.Options{Now: time.Now(), CashPolicies: g.catalog().CashPolicies, AccountPurchases: in.AccountPurchases})
 	if err != nil {
 		return result, err
 	}
@@ -357,7 +364,7 @@ func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.C
 			notice(p.Opcode, p.Body)
 		}
 	}
-	if op == 120 && g.server.Characters.Fate != nil {
+	if op == 120 && g.catalog().Fate != nil {
 		notice(108, g.fateEvents(time.Now()))
 	}
 	*dst = append(*dst, opening.Packet{Class: 1, Opcode: op, Body: ack})
@@ -406,7 +413,7 @@ func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.C
 		*dst = append(*dst, battlePass...)
 	}
 	notice(889, []byte{0, p.CrystalContractSelection})
-	if f := g.server.Characters.Fate; f != nil && g.channel != 63 {
+	if f := g.catalog().Fate; f != nil && g.channel != 63 {
 		eventContainers, err := inventorywire.FateContainers(in, c)
 		if err != nil {
 			return result, err
@@ -423,7 +430,7 @@ func (g *game) loadingPackets(ctx context.Context, r storage.Roster, c storage.C
 
 func (g *game) fateEvents(now time.Time) []byte {
 	var endsAt uint32
-	if quests := g.server.Characters.Quests; quests != nil && quests.BattlePass.Active(now) {
+	if quests := g.catalog().Quests; quests != nil && quests.BattlePass.Active(now) {
 		endsAt = uint32(quests.BattlePass.Definition.Schedule.EndsAt)
 	}
 	return eventVisibility(endsAt)
@@ -515,7 +522,7 @@ func (g *game) openingRequest(ctx context.Context, op uint16, body []byte) error
 	}
 	if op == 39 {
 		project := func(v storage.Character) (protocol.Actor, error) { a, _, err := readActor(v, g.channel); return a, err }
-		frames, complete, err := g.opening.Death(ctx, g.server.DB, g.lease, c, body, &g.server.Characters.OpeningCombat, project)
+		frames, complete, err := g.opening.Death(ctx, g.server.DB, g.lease, c, body, &g.catalog().OpeningCombat, project)
 		if sendErr := g.packets(frames); sendErr != nil {
 			return sendErr
 		}

@@ -28,7 +28,7 @@ func (g *game) renameTown(c storage.Character) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return g.server.Characters.AllowsTownPosition(c.Level, q, point(c.Position)), nil
+	return g.catalog().AllowsTownPosition(c.Level, q, point(c.Position)), nil
 }
 
 func (g *game) renameCharacter(ctx context.Context, f protocol.Frame) error {
@@ -49,7 +49,7 @@ func (g *game) renameCharacter(ctx context.Context, f protocol.Frame) error {
 		code = 19
 		cmd.Slot = binary.LittleEndian.Uint16(f.Body)
 		var out storage.RenameGrant
-		out, err = g.server.DB.GrantRename(ctx, g.lease, cmd, g.renameReplay, g.server.Characters.Rename[storage.RenameBag], g.renameTown, time.Now())
+		out, err = g.server.DB.GrantRename(ctx, g.lease, cmd, g.renameReplay, g.catalog().Rename[storage.RenameBag], g.renameTown, time.Now())
 		stamp = out.Replay
 	}
 	if err == nil {
@@ -76,7 +76,7 @@ func (g *game) buyRename(ctx context.Context, row commercewire.CashSelection, bo
 	if replay.Opcode == 64 && replay.Sequence == g.seq && replay.Body == string(body) {
 		last = storage.RenameReplay{Owner: g.lease, Command: cmd, Character: replay.CharacterID, Revision: replay.Revision, AccountRevision: replay.AssetRevision}
 	}
-	out, err := g.server.DB.GrantRename(ctx, g.lease, cmd, last, g.server.Characters.Rename[storage.RenameCash], g.renameTown, time.Now())
+	out, err := g.server.DB.GrantRename(ctx, g.lease, cmd, last, g.catalog().Rename[storage.RenameCash], g.renameTown, time.Now())
 	if err != nil {
 		if errors.Is(err, storage.ErrLease) || errors.Is(err, storage.ErrCommitUnknown) || ctx.Err() != nil {
 			return err

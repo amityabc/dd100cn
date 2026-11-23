@@ -42,6 +42,30 @@ type DungeonFatigue struct {
 	Remaining, Limit uint16
 }
 
+// AvailableDungeonFatigue reads the effective 06:00 China Standard Time
+// fatigue balance. Only a consuming gameplay transaction records the reset.
+func AvailableDungeonFatigue(c Character, now time.Time) (DungeonFatigue, error) {
+	var profile dungeonProgression
+	if err := json.Unmarshal(c.Gameplay, &profile); err != nil {
+		return DungeonFatigue{}, err
+	}
+	p := profile.Progression
+	if p.Fatigue > p.FatigueLimit || p.FatigueDay < 0 {
+		return DungeonFatigue{}, ErrInvalid
+	}
+	day := dungeonFatigueDay(now)
+	left := p.Fatigue
+	if p.FatigueDay != 0 && day > p.FatigueDay {
+		left = p.FatigueLimit
+	}
+	return DungeonFatigue{left, p.FatigueLimit}, nil
+}
+
+func dungeonFatigueDay(now time.Time) int64 {
+	date := now.UTC().Add(2 * time.Hour)
+	return int64(date.Year()*10000 + int(date.Month())*100 + date.Day())
+}
+
 type StormAdmission struct {
 	Policy                   string
 	Character                uint16
@@ -142,8 +166,7 @@ func (s *Store) chargeDungeonProgress(ctx context.Context, tx *sql.Tx, l Lease, 
 		pointsPerFatigue < 0 || pointsPerFatigue > math.MaxInt32 {
 		return DungeonFatigue{}, ErrInvalid
 	}
-	date := now.UTC().Add(2 * time.Hour)
-	day := int64(date.Year()*10000 + int(date.Month())*100 + date.Day())
+	day := dungeonFatigueDay(now)
 	fatigue := p.Fatigue
 	if p.FatigueDay != 0 && day > p.FatigueDay {
 		fatigue = p.FatigueLimit

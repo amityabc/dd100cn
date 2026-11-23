@@ -49,7 +49,7 @@ func (g *game) mailbox(ctx context.Context, op uint16, body []byte) error {
 			return reject()
 		}
 	}
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	out, err := g.server.DB.MailboxAction(ctx, g.lease, op, ids, state, catalog.GoldCarryLimits, catalog.Weights)
 	if errors.Is(err, storage.ErrInvalid) || errors.Is(err, storage.ErrFunds) || errors.Is(err, storage.ErrCapacity) || errors.Is(err, storage.ErrPhase) {
 		return reject()
@@ -130,7 +130,7 @@ func (g *game) sendMail(ctx context.Context, op uint16, body []byte) error {
 	if err != nil || !g.commerceInTown() {
 		return reject(17)
 	}
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	out, err := g.server.DB.SendMail(ctx, g.lease, g.seq, req, g.mailState.replay, catalog.GoldCarryLimits, catalog.MailAttachments)
 	var code storage.MailRejection
 	if errors.As(err, &code) {

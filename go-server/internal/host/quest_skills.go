@@ -19,7 +19,7 @@ func (g *game) questSkillRequest(ctx context.Context, f protocol.Frame) error {
 		return err
 	}
 	duel := duellobby.IsChannel(g.channel)
-	cat := g.server.Characters
+	cat := g.catalog()
 	var action questwire.SkillResult
 	var refusal error
 	c, err := g.server.DB.ChangeSkillBuild(ctx, g.lease, func(c storage.Character, r storage.Roster) (json.RawMessage, error) {
@@ -124,7 +124,7 @@ func (g *game) skillOwner(c storage.Character, phase storage.Phase, req questwir
 
 func (g *game) sendSkillBuild(c storage.Character, duel bool, override json.RawMessage) error {
 	if override == nil && duel && g.channel == 252 && g.duelPosition != nil && g.duelPosition.Town == 10 && g.duelPosition.Area == 4 {
-		override = g.server.Characters.Quests.OverlayDisplay(c, g.questSkills)
+		override = g.catalog().Quests.OverlayDisplay(c, g.questSkills)
 	}
 	if override != nil {
 		c.Gameplay = override

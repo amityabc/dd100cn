@@ -11,7 +11,7 @@ import (
 )
 
 func (g *game) avatarCompound(ctx context.Context, op uint16, body []byte) error {
-	cat := g.server.Characters.Quests.AvatarEdits().Compound
+	cat := g.catalog().Quests.AvatarEdits().Compound
 	now := time.Now()
 	var key []byte
 	var plan func(*storage.CommerceTx) error

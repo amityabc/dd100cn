@@ -23,7 +23,7 @@ func (g *game) openGift(ctx context.Context, op uint16, body []byte) error {
 		}
 		return reject(code)
 	}
-	c := g.server.Characters
+	c := g.catalog()
 	replay := g.commerceState
 	out, err := g.server.DB.Commerce(ctx, g.lease, op, g.seq, body, replay, func(x *storage.CommerceTx) error {
 		if op == 160 && len(body) >= 2 {

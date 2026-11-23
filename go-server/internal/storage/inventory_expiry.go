@@ -29,8 +29,12 @@ func dailyExpired(a Asset, prepared map[uint32]json.RawMessage, now int64) (bool
 func (s *Store) expireTownInventory(ctx context.Context, tx *sql.Tx, l Lease, c Character, in Inventory, r *Roster, now time.Time) (Character, Inventory, error) {
 	checked := now.Unix()
 	var changed, shared bool
+	var templates map[uint32]json.RawMessage
+	if frozen := s.dailyExpiryTemplates.Load(); frozen != nil {
+		templates = *frozen
+	}
 	for _, a := range in.Items {
-		expired, err := dailyExpired(a, s.dailyExpiryTemplates, checked)
+		expired, err := dailyExpired(a, templates, checked)
 		if err != nil {
 			return c, in, err
 		}

@@ -23,7 +23,7 @@ func (g *game) dungeonQuestDrops(ctx context.Context, run *dungeon.Run, c storag
 	}
 	source := questwire.QuestDropSource{EventKey: key, RunID: run.ID, Dungeon: d.ID, Seed: run.Seed,
 		Code: code, Kind: kind, Difficulty: d.Difficulty, RepeatedPassive: repeated}
-	p, grants, rev, err := g.server.Characters.Quests.RollQuestDrops(c, source, func() (storage.Inventory, error) {
+	p, grants, rev, err := g.catalog().Quests.RollQuestDrops(c, source, func() (storage.Inventory, error) {
 		return g.server.DB.Inventory(ctx, g.lease)
 	})
 	return dungeonQuestGrantPlan{p, grants, rev}, err

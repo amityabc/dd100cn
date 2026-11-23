@@ -8,7 +8,7 @@ import (
 )
 
 type MagicSealDefinition struct {
-	TemplateID   uint32
+	TemplateID   uint32 `json:"TemplateId"`
 	ResourceHash string
 	GoldCost     uint32
 	Tiers        []magicSealTier
@@ -29,6 +29,11 @@ type magicSealBand struct {
 	Minimum, Maximum float64
 	Weight           int
 }
+
+type MagicSealWeight = magicSealWeight
+type MagicSealTier = magicSealTier
+type MagicSealGroup = magicSealGroup
+type MagicSealBand = magicSealBand
 type magicSealChoice struct {
 	ID                      byte `json:"Id"`
 	FirstRatio, SecondRatio byte

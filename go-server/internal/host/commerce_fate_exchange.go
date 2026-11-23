@@ -17,7 +17,7 @@ func (g *game) buyFateExchange(ctx context.Context, buy commercewire.Buy, body [
 	if !g.commerceInTown() {
 		return reject()
 	}
-	c := g.server.Characters
+	c := g.catalog()
 	d := c.Commerce.FateExchange
 	now := time.Now()
 	q := storage.FateExchangeRequest{NPC: buy.NPC, Shop: buy.Shop, Template: buy.TemplateID, Count: buy.Count, Sequence: g.seq}
@@ -78,7 +78,7 @@ func (g *game) fateExchangeCounts(ctx context.Context, npc uint32) error {
 	if !g.commerceInTown() {
 		return reject()
 	}
-	counts, err := g.server.DB.FateExchangeCounts(ctx, g.lease, g.server.Characters.Commerce.FateExchange, npc, time.Now())
+	counts, err := g.server.DB.FateExchangeCounts(ctx, g.lease, g.catalog().Commerce.FateExchange, npc, time.Now())
 	if expectedCommerceError(err) {
 		return reject()
 	}

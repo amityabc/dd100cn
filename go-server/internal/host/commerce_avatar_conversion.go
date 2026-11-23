@@ -37,7 +37,7 @@ func (g *game) convertAvatar(ctx context.Context, body []byte) error {
 	if body[2] != 0 || le.Uint32(body[3:]) != 0 || le.Uint32(body[11:]) != 1 || target > math.MaxUint16 {
 		return reject(storage.ErrAvatarConversionSource)
 	}
-	catalog := g.server.Characters.Quests.AvatarEdits().Conversions
+	catalog := g.catalog().Quests.AvatarEdits().Conversions
 	now := time.Now()
 	result, err := g.server.DB.Commerce(ctx, g.lease, 507, g.seq, body, g.commerceState, func(tx *storage.CommerceTx) error {
 		return tx.ConvertAvatar(slot, uint16(target), catalog, now)

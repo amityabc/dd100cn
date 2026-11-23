@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"time"
 
+	"s9a1/server/internal/catalogprep"
 	"s9a1/server/internal/config"
 	"s9a1/server/internal/host"
 	"s9a1/server/internal/operator"
@@ -195,6 +197,15 @@ func run() (runErr error) {
 	}
 	if err = db.Initialize(ctx); err != nil {
 		return err
+	}
+	owned, err := db.OwnedTemplateIDs(ctx)
+	if err != nil {
+		return fmt.Errorf("read owned item templates: %w", err)
+	}
+	if len(owned) != 0 {
+		if err = catalogprep.PrepareOwned(ctx, characters, c.Path(c.Resources.Pvf), c.Path(c.Resources.ClientProfile), owned); err != nil {
+			return fmt.Errorf("prepare owned item resources: %w", err)
+		}
 	}
 	s, err := host.New(c, db, characters)
 	if err != nil {

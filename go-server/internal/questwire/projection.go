@@ -260,31 +260,17 @@ func (c *Catalog) Project(character storage.Character, in storage.Inventory, rec
 	return c.ProjectScene(character, in, receipts, false)
 }
 
-func (c *Catalog) ProjectScene(character storage.Character, in storage.Inventory, receipts map[string]json.RawMessage, inDungeon bool) ([]Packet, error) {
+// Available returns the sorted quest IDs offered at this character's location.
+func (c *Catalog) Available(character storage.Character) ([]uint16, error) {
 	p, err := playerOf(character)
 	if err != nil {
 		return nil, err
 	}
-	if p.level == 0 || len(p.hist.Active) > 20 || in.CharacterID != character.ID {
-		return nil, errors.New("invalid quest projection owner or level")
-	}
-	v := projectionView(c, p, in, receipts)
-	v.inDungeon = inDungeon
-	activeBody := little.AppendUint32(nil, uint32(len(p.hist.Active)))
+	return sortedKeys(c.available(p)), nil
+}
+
+func (c *Catalog) available(p player) map[uint16]bool {
 	available := map[uint16]bool{}
-	for _, id := range sortedKeys(p.hist.Active) {
-		q := c.ordinary[id]
-		if q == nil {
-			return nil, fmt.Errorf("persisted quest %d definition missing", id)
-		}
-		left, err := v.remaining(q, map[uint16]bool{})
-		if err != nil {
-			return nil, err
-		}
-		activeBody = little.AppendUint16(activeBody, id)
-		activeBody = little.AppendUint32(activeBody, left)
-		available[id] = true
-	}
 	for i := range c.quests {
 		q := &c.quests[i]
 		if c.ordinaryAvailable(p, q) {
@@ -301,6 +287,34 @@ func (c *Catalog) ProjectScene(character storage.Character, in storage.Inventory
 		available[id] = true
 	}
 	for id := range c.dpl(p, []uint16{6410, 6411, 6412, 6413}, 100, true) {
+		available[id] = true
+	}
+	return available
+}
+
+func (c *Catalog) ProjectScene(character storage.Character, in storage.Inventory, receipts map[string]json.RawMessage, inDungeon bool) ([]Packet, error) {
+	p, err := playerOf(character)
+	if err != nil {
+		return nil, err
+	}
+	if p.level == 0 || len(p.hist.Active) > 20 || in.CharacterID != character.ID {
+		return nil, errors.New("invalid quest projection owner or level")
+	}
+	v := projectionView(c, p, in, receipts)
+	v.inDungeon = inDungeon
+	activeBody := little.AppendUint32(nil, uint32(len(p.hist.Active)))
+	available := c.available(p)
+	for _, id := range sortedKeys(p.hist.Active) {
+		q := c.ordinary[id]
+		if q == nil {
+			return nil, fmt.Errorf("persisted quest %d definition missing", id)
+		}
+		left, err := v.remaining(q, map[uint16]bool{})
+		if err != nil {
+			return nil, err
+		}
+		activeBody = little.AppendUint16(activeBody, id)
+		activeBody = little.AppendUint32(activeBody, left)
 		available[id] = true
 	}
 	proto := binary.AppendUvarint([]byte{8, 21, 16}, uint64(p.level))

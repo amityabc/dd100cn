@@ -66,7 +66,7 @@ func (g *game) accountCargo(ctx context.Context, op uint16, body []byte) error {
 	} else if len(body) != 0 {
 		return g.send(1, op, mailwire.Rejected(rejection))
 	}
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	out, err := g.server.DB.Commerce(ctx, g.lease, op, g.seq, body, g.commerceState, func(x *storage.CommerceTx) error {
 		if !g.commerceInTown() {
 			return storage.ErrPhase

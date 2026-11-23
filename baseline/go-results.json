@@ -1,5 +1,12 @@
 {
   "scope": "Development checkpoints on the same Windows host; historical entry and movement runs use project PostgreSQL 17.11 and the matched PVF.",
+  "nativeCatalogHostBuild20261123": {
+    "command": "go build -o serve100.exe ./cmd/serve100",
+    "go": "go version go1.27.4 windows/amd64",
+    "coldCompilerCacheSeconds": 17.795,
+    "noChangeSeconds": 0.977,
+    "oneGameplayChangeSeconds": 2.498
+  },
   "gameplayCheckpointBuild20261123": {
     "command": "go build -o serve100.exe ./cmd/serve100",
     "go": "go version go1.27.4 windows/amd64",

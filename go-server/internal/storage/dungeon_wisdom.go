@@ -327,19 +327,9 @@ func (s *Store) WisdomClear(ctx context.Context, l Lease, expected Character, a 
 		}
 		var fatigue DungeonFatigue
 		if retry {
-			var profile dungeonProgression
-			if err := json.Unmarshal(c.Gameplay, &profile); err != nil {
+			fatigue, err = AvailableDungeonFatigue(c, now)
+			if err != nil {
 				return DungeonFatigue{}, err
-			}
-			p := profile.Progression
-			date := now.UTC().Add(2 * time.Hour)
-			day := int64(date.Year()*10000 + int(date.Month())*100 + date.Day())
-			fatigue = DungeonFatigue{p.Fatigue, p.FatigueLimit}
-			if p.Fatigue > p.FatigueLimit || p.FatigueDay < 0 {
-				return DungeonFatigue{}, ErrInvalid
-			}
-			if p.FatigueDay != 0 && day > p.FatigueDay {
-				fatigue.Remaining = fatigue.Limit
 			}
 			if fatigue.Remaining == 0 {
 				return DungeonFatigue{}, ErrFunds

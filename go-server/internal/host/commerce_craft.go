@@ -26,7 +26,7 @@ func (g *game) craftEquipment(ctx context.Context, op uint16, body []byte) error
 		return reject()
 	}
 	q.Sequence = g.seq
-	c := g.server.Characters
+	c := g.catalog()
 	out, err := g.server.DB.Commerce(ctx, g.lease, op, g.seq, body, g.commerceState, func(x *storage.CommerceTx) error {
 		if err := x.Craft(q, c.Commerce.Craft, time.Now(), func(method storage.CraftMethod, npc int16) bool {
 			return c.TownCraft(x.Character, method, npc)

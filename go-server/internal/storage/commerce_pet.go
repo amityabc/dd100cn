@@ -22,7 +22,7 @@ type PetHatchDefinition struct {
 }
 
 type PetNameRule struct {
-	TemplateID                uint32
+	TemplateID                uint32 `json:"TemplateId"`
 	ResourceHash, DefaultName string
 }
 

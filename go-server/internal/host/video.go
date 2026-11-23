@@ -16,7 +16,7 @@ func (g *game) videoCall(ctx context.Context) error {
 	if g.opening != nil || g.ordinary.Active() || g.ordinary.Returning() {
 		return nil
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	opts := questwire.ChangeContext{Now: now, Lease: g.lease, HasNPC: g.questHasNPC}
 	var id uint16

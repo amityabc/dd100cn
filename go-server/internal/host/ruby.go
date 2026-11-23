@@ -27,7 +27,7 @@ func (g *game) rubyTreasury(ctx context.Context, op uint16, body []byte) error {
 	if err != nil {
 		return reject()
 	}
-	dungeons := g.server.Characters.Dungeons
+	dungeons := g.catalog().Dungeons
 	if g.channel != 19 || g.opening != nil || g.ordinary.Returning() || dungeons == nil || dungeons.Ruby == nil {
 		return reject()
 	}
@@ -41,7 +41,7 @@ func (g *game) rubyTreasury(ctx context.Context, op uint16, body []byte) error {
 	if compound && run != nil {
 		bosses, bossProof = run.RubyClearedBosses()
 	}
-	out, err := g.server.DB.ChangeRubyTreasury(ctx, g.lease, g.server.Characters.Weights, bosses, func(c storage.Character, in storage.Inventory, prior map[string]json.RawMessage) (storage.TownQuestMutation, error) {
+	out, err := g.server.DB.ChangeRubyTreasury(ctx, g.lease, g.catalog().Weights, bosses, func(c storage.Character, in storage.Inventory, prior map[string]json.RawMessage) (storage.TownQuestMutation, error) {
 		var m storage.TownQuestMutation
 		p, err := readGameplay(c.Gameplay)
 		if err != nil {
@@ -132,7 +132,7 @@ func (g *game) rubyTreasury(ctx context.Context, op uint16, body []byte) error {
 				return m, nil
 			}
 			key, proof = claim.Key, claim.Proof
-			next, err = storage.RubyBoxGrants(c, in, g.server.Characters.Commerce.Templates, claim.Proof.Items, now)
+			next, err = storage.RubyBoxGrants(c, in, g.catalog().Commerce.Templates, claim.Proof.Items, now)
 			if err != nil {
 				return m, err
 			}

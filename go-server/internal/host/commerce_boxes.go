@@ -13,7 +13,7 @@ import (
 )
 
 func (g *game) openCommerceBox(ctx context.Context, op uint16, body []byte) error {
-	c := g.server.Characters
+	c := g.catalog()
 	now := time.Now()
 	var apply func(*storage.CommerceTx) error
 	var success func(storage.CommerceResult) ([]byte, error)
@@ -104,7 +104,7 @@ func (g *game) luckyBox(ctx context.Context, op uint16, body []byte) error {
 		}
 		return fail("请在赛丽亚房间开启。")
 	}
-	c := g.server.Characters
+	c := g.catalog()
 	now := time.Now()
 	out, err := g.server.DB.Commerce(ctx, g.lease, 1829, g.seq, body[13:], g.commerceState, func(x *storage.CommerceTx) error {
 		place, err := c.ConsumableTown(x.Character)

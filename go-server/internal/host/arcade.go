@@ -73,7 +73,7 @@ func (g *game) arcadeRequest(ctx context.Context, f protocol.Frame) error {
 		return g.send(0, 24, protocol.Town(a))
 	case 1279:
 		room.Report(report, func() bool {
-			d, err := g.server.Characters.Quests.DuelObjective(c, room.Training.ID)
+			d, err := g.catalog().Quests.DuelObjective(c, room.Training.ID)
 			return err == nil && entrance && d.ID == room.Training.ID && d.Hash == room.Training.Hash &&
 				d.Acceptance == room.Training.Acceptance && d.StageReady(room.Training.Stage)
 		})
@@ -87,7 +87,7 @@ func (g *game) createArcade(c storage.Character, previous *duellobby.Room, entra
 	if !request.Supported || !entrance && !practice {
 		return reject()
 	}
-	quests := g.server.Characters.Quests
+	quests := g.catalog().Quests
 	advanced := previous != nil && previous.Mode == protocol.PracticeMode && previous.Training.Stage == 1 && !practice &&
 		quests.PracticeAdvanced(c, previous.Training.ID, previous.Training.Hash, previous.Training.Acceptance)
 	if reuse, blocked := previous.Existing(body, advanced); blocked {
@@ -101,7 +101,7 @@ func (g *game) createArcade(c storage.Character, previous *duellobby.Room, entra
 		return err
 	}
 	next := &duellobby.Room{Owner: g.lease, Character: c.ID, ID: 1, Mode: protocol.ArcadeMode, CreateBody: bytes.Clone(body)}
-	arcade := g.server.Characters.Arcade
+	arcade := g.catalog().Arcade
 	var objective questwire.DuelObjective
 	if entrance {
 		objective, err = quests.DuelObjective(c, 0)

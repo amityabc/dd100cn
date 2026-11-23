@@ -33,7 +33,7 @@ func (g *game) avatarAction(ctx context.Context, body []byte) error {
 	if err != nil {
 		return err
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	if !cat.AllowsOrdinaryTownPosition(c.Level, q, point(c.Position)) {
 		return reject()
 	}

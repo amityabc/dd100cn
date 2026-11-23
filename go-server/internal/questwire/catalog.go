@@ -19,20 +19,37 @@ type RewardRow struct {
 	Item      Material
 	Job, Grow int
 }
+type AnswerRequirement = struct {
+	Quest  uint16
+	Answer byte
+}
 type Criterion struct {
 	Id, Parent                              uint16
 	MinimumLevel, MaximumLevel              byte
 	Job, Grow, GrowNumber, AdvancementChain int
 	AwakeningAward                          *Award
 	Required                                [][]uint16
-	Answers                                 []struct {
-		Quest  uint16
-		Answer byte
-	}
-	Collisions, Children            []uint16
-	Targets, NonTargets             []Target
-	Supported, LegacyUpperAwakening bool
+	Answers                                 []AnswerRequirement
+	Collisions, Children                    []uint16
+	Targets, NonTargets                     []Target
+	Supported, LegacyUpperAwakening         bool
 }
+
+// Catalog resource records populated by native preparation.
+type PastQuest = pastQuest
+type OperationRules = operationRules
+type AcceptanceGrant = grant
+type QuestPoint = questPoint
+type PassReward = passReward
+type PassMission = passMission
+type GrowthItems = growthItems
+type ExperienceItem = experienceItem
+type LevelTicket = levelTicket
+type CapsuleItem = capsuleItem
+type QuestTicketItem = questTicketItem
+type QuestTicketDefinition = questTicketDefinition
+type TeleportDefinition = teleportDefinition
+
 type Quest struct {
 	Criterion
 	Hash                                                                                                           string
@@ -71,10 +88,25 @@ type Quest struct {
 	Operations *operationRules
 }
 
+func (q Quest) MarshalJSON() ([]byte, error) {
+	type record Quest
+	// Native ordinary rows use Grow but do not expose the ticket's GrowNumber.
+	return json.Marshal(struct {
+		record
+		GrowNumber *int `json:",omitempty"`
+	}{record: record(q)})
+}
+
 type NpcTarget struct {
 	NpcId            uint32
 	Town, Area, X, Y uint16
 	ResourceHash     string
+	Visibility       *NpcVisibility
+}
+
+type NpcVisibility struct {
+	Quest        uint16
+	ResourceHash string
 }
 type Ticket struct {
 	Criterion

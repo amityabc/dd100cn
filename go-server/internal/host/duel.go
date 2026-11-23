@@ -19,7 +19,7 @@ func (g *game) syncDuel(ctx context.Context, op uint16, r storage.Roster, c stor
 		return storage.ErrPhase
 	}
 	if g.arcade.Owned(g.lease, c.ID) && !g.arcade.Closed {
-		if op == 120 && g.server.Characters.Fate != nil {
+		if op == 120 && g.catalog().Fate != nil {
 			if err := g.send(0, 108, g.fateEvents(time.Now())); err != nil {
 				return err
 			}
@@ -58,7 +58,7 @@ func (g *game) syncDuel(ctx context.Context, op uint16, r storage.Roster, c stor
 	if err != nil {
 		return err
 	}
-	if op == 120 && g.server.Characters.Fate != nil {
+	if op == 120 && g.catalog().Fate != nil {
 		if err = g.send(0, 108, g.fateEvents(time.Now())); err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func (g *game) moveDuel(r storage.Roster, x, y uint16) error {
 	}
 	dest := *g.duelPosition
 	dest.X, dest.Y = x, y
-	if !g.server.Characters.AllowsTownPosition(c.Level, q, point(dest)) {
+	if !g.catalog().AllowsTownPosition(c.Level, q, point(dest)) {
 		return storage.ErrInvalid
 	}
 	g.duelPosition = &dest
@@ -142,7 +142,7 @@ func (g *game) travelDuel(r storage.Roster, req protocol.TownChange, reject func
 	} else if src.Town != 10 || src.Area != uint16(req.PreviousArea) {
 		return reject()
 	}
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	allowed := false
 	if to == (storage.Position{Town: 10, Area: 4, X: 550, Y: 300, Direction: 5}) {
 		allowed = catalog.AllowsTownPosition(c.Level, q, point(src)) && catalog.AllowsTownPosition(c.Level, q, point(to))

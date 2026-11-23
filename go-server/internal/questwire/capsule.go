@@ -11,11 +11,12 @@ import (
 
 type capsuleItem struct {
 	levelTicket
-	NativeAction  uint32
-	TargetLevel   byte
-	UsablePlaces  []string
-	CooldownGroup *uint32
-	ForbidScene8  bool
+	NativeAction      uint32
+	TargetLevel       byte
+	UsablePlaces      []string
+	CooldownGroup     *uint32
+	ForbidScene8      bool
+	UnsupportedReason *string
 }
 
 const capsule193 = uint32(193)

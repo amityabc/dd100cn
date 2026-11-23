@@ -77,7 +77,8 @@ type CommerceCatalog struct {
 }
 
 type CommercePeer struct {
-	NPC, Shop  uint32
+	NPC        uint32 `json:"Npc"`
+	Shop       uint32
 	Placements []uint32
 }
 
@@ -108,27 +109,34 @@ type CommerceVisibilityRule struct {
 	Earlier     []uint16
 }
 
-type CommercePayment struct{ TemplateID, Count uint32 }
+type CommercePayment struct {
+	TemplateID uint32 `json:"TemplateId"`
+	Count      uint32
+}
 
 type CommerceLimit struct {
 	Account bool
 	Period  byte
 	Count   uint32
+	Legacy  bool
 }
 
 type CommerceProduct struct {
-	NPC, Shop        uint32
-	Job              byte
-	TemplateID, Gold uint32
-	Materials        []CommercePayment
-	Template         json.RawMessage
-	Limits           []CommerceLimit
-	MinimumLevel     byte
-	Equipment        bool
+	NPC          uint32 `json:"Npc"`
+	Shop         uint32
+	Job          byte
+	TemplateID   uint32 `json:"TemplateId"`
+	Gold         uint32
+	Materials    []CommercePayment
+	Template     json.RawMessage
+	Limits       []CommerceLimit
+	MinimumLevel byte
+	Equipment    bool
 }
 
 type CashOffer struct {
-	Commodity, TemplateID, Count, Cera, Gold                                    uint32
+	Commodity, Count, Cera, Gold                                                uint32
+	TemplateID                                                                  uint32 `json:"TemplateId"`
 	TargetBagExpansion, TargetPersonalCargoCapacity, TargetAccountCargoCapacity uint16
 	RevivalCoins, NativeFreePointOnly                                           bool
 	AccountRestriction, AccountLimit, CharacterRestriction, CharacterDailyLimit uint32

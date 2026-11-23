@@ -20,7 +20,7 @@ type MailRejection uint16
 func (code MailRejection) Error() string { return fmt.Sprintf("player mail rejected (%d)", code) }
 
 type MailAttachmentPolicy struct {
-	TemplateID         uint32
+	TemplateID         uint32 `json:"TemplateId"`
 	ResourceHash       string
 	Rule               int
 	LifetimeRestricted bool

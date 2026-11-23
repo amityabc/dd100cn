@@ -12,7 +12,7 @@ import (
 )
 
 func (g *game) projectFate(f protocol.Frame, out storage.TownQuestResult, next fateAction, now time.Time) error {
-	def := g.server.Characters.Fate
+	def := g.catalog().Fate
 	actor, p, err := readActor(out.Character, g.channel)
 	if err != nil {
 		return err

@@ -17,6 +17,7 @@ type rewardGraphNode struct {
 	Leaf  json.RawMessage
 	Pools []GiftPool
 }
+type RewardGraphNode = rewardGraphNode
 
 type EmblemCompoundCatalog struct {
 	Sources map[uint32]struct {

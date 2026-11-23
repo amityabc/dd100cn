@@ -12,7 +12,7 @@ import (
 )
 
 func (g *game) travel(ctx context.Context, op uint16, body []byte) error {
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	roomReturn := op == 1418
 	var req protocol.TownChange
 	var err error

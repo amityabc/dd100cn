@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync/atomic"
 	"unicode"
 	"unicode/utf8"
 
@@ -131,11 +132,11 @@ type Roster struct {
 type Store struct {
 	db                   *sql.DB
 	battlePass           BattlePassUpdater
-	dailyExpiryTemplates map[uint32]json.RawMessage
+	dailyExpiryTemplates atomic.Pointer[map[uint32]json.RawMessage]
 }
 
 func (s *Store) BindDailyExpiry(templates map[uint32]json.RawMessage) {
-	s.dailyExpiryTemplates = templates
+	s.dailyExpiryTemplates.Store(&templates)
 }
 
 func Open(ctx context.Context, dsn string) (*Store, error) {

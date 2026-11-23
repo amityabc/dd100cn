@@ -21,7 +21,7 @@ func (g *game) questArrival(c storage.Character, id uint16) (json.RawMessage, er
 	if err != nil {
 		return nil, err
 	}
-	raw, err := g.server.Characters.Towns.Arrival(c.Gameplay, c.Level, state, point(c.Position))
+	raw, err := g.catalog().Towns.Arrival(c.Gameplay, c.Level, state, point(c.Position))
 	if err != nil || len(raw) == 0 {
 		return nil, err
 	}
@@ -52,12 +52,12 @@ func (g *game) questChange(ctx context.Context, f protocol.Frame) error {
 	}
 	var action questwire.Action
 	opts := questwire.ChangeContext{Now: time.Now(), Delegated: g.server.delegated, Arrival: g.questArrival, RankedDuel: phase == storage.Selected, Dungeon: g.questDungeon(), Lease: g.lease}
-	out, err := g.server.DB.ChangeQuest(ctx, g.lease, phase, g.server.Characters.Weights, func(c storage.Character, in storage.Inventory, receipts map[string]json.RawMessage) (storage.TownQuestMutation, error) {
+	out, err := g.server.DB.ChangeQuest(ctx, g.lease, phase, g.catalog().Weights, func(c storage.Character, in storage.Inventory, receipts map[string]json.RawMessage) (storage.TownQuestMutation, error) {
 		if phase == storage.Selected && (c.Level < 50 || training && !g.arcade.CanCompleteQuest(g.lease, c.ID)) {
 			return storage.TownQuestMutation{}, storage.ErrInvalid
 		}
 		var err error
-		action, err = g.server.Characters.Quests.Change(c, in, receipts, f.Opcode, id, opts)
+		action, err = g.catalog().Quests.Change(c, in, receipts, f.Opcode, id, opts)
 		return action.Mutation, err
 	})
 	if err != nil {
@@ -78,13 +78,13 @@ func (g *game) questChange(ctx context.Context, f protocol.Frame) error {
 	}
 	delete(g.questAcceptSeen, id)
 	delete(g.questConfirm, id)
-	packets, err := g.server.Characters.Quests.ProjectScene(out.Character, out.Inventory, out.Receipts, opts.Dungeon != nil)
+	packets, err := g.catalog().Quests.ProjectScene(out.Character, out.Inventory, out.Receipts, opts.Dungeon != nil)
 	if err != nil {
 		return err
 	}
 	var assets []inventorywire.Packet
 	if action.AssetProjection {
-		assets, _, err = inventorywire.Town(out.Inventory, out.Character, inventorywire.Options{CashPolicies: g.server.Characters.CashPolicies, Now: opts.Now})
+		assets, _, err = inventorywire.Town(out.Inventory, out.Character, inventorywire.Options{CashPolicies: g.catalog().CashPolicies, Now: opts.Now})
 		if err != nil {
 			return err
 		}
@@ -111,11 +111,11 @@ func (g *game) questHasNPC(c storage.Character, n questwire.NpcTarget) (bool, er
 	if err != nil {
 		return false, err
 	}
-	return g.server.Characters.Towns.HasQuestNPC(c.Level, state, point(c.Position), n.NpcId, n.Town, n.Area, n.X, n.Y), nil
+	return g.catalog().Towns.HasQuestNPC(c.Level, state, point(c.Position), n.NpcId, n.Town, n.Area, n.X, n.Y), nil
 }
 
 func (g *game) questTrigger(ctx context.Context, f protocol.Frame) error {
-	catalog := g.server.Characters.Quests
+	catalog := g.catalog().Quests
 	req, isQuestion, err := catalog.ReadTrigger(f.Body)
 	if err != nil {
 		return err
@@ -134,7 +134,7 @@ func (g *game) questTrigger(ctx context.Context, f protocol.Frame) error {
 	}
 	var action questwire.Action
 	var fact *questwire.Confirmation
-	out, err := g.server.DB.ChangeQuest(ctx, g.lease, phase, g.server.Characters.Weights, func(c storage.Character, in storage.Inventory, receipts map[string]json.RawMessage) (storage.TownQuestMutation, error) {
+	out, err := g.server.DB.ChangeQuest(ctx, g.lease, phase, g.catalog().Weights, func(c storage.Character, in storage.Inventory, receipts map[string]json.RawMessage) (storage.TownQuestMutation, error) {
 		if phase == storage.Selected && c.Level < 50 {
 			return storage.TownQuestMutation{}, storage.ErrInvalid
 		}
@@ -180,7 +180,7 @@ func (g *game) sendQuestBook(out storage.TownQuestResult) error {
 }
 
 func (g *game) sendQuestBookOrdered(out storage.TownQuestResult, clearedFirst bool) error {
-	packets, err := g.server.Characters.Quests.ProjectScene(out.Character, out.Inventory, out.Receipts, g.ordinary.Active())
+	packets, err := g.catalog().Quests.ProjectScene(out.Character, out.Inventory, out.Receipts, g.ordinary.Active())
 	if err != nil {
 		return err
 	}
@@ -268,7 +268,7 @@ func (g *game) questComplete(ctx context.Context, f protocol.Frame) error {
 	}
 	var action questwire.CompleteAction
 	now := time.Now()
-	cat := g.server.Characters
+	cat := g.catalog()
 	opts := questwire.CompleteContext{
 		ChangeContext:   questwire.ChangeContext{Now: now, HasNPC: g.questHasNPC, Dungeon: g.questDungeon(), Lease: g.lease},
 		GoldCarryLimits: cat.GoldCarryLimits, Growth: cat.OpeningCombat.ApplyQuestGrowth,

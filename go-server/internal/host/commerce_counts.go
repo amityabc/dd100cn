@@ -90,7 +90,7 @@ func (g *game) merchantCounts(ctx context.Context, body []byte) error {
 	if err != nil {
 		return err
 	}
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	products, peers := catalog.Commerce.Products, catalog.Commerce.TownPeers
 	run := g.ordinary.Run
 	if run != nil {

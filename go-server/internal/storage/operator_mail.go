@@ -30,6 +30,12 @@ type ordinaryMailAttributes struct {
 	Locked                                  bool
 	EnchantUpgradeCount                     uint8
 }
+
+// InitialItemAttributes is the saved attribute record for a newly acquired ordinary item.
+func InitialItemAttributes(quality uint32, durability uint16) (json.RawMessage, error) {
+	return json.Marshal(ordinaryMailAttributes{QualitySeed: quality, Durability: durability})
+}
+
 type systemGrant struct {
 	Template         json.RawMessage
 	Count            uint32

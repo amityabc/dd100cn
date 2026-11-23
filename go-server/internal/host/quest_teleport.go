@@ -20,7 +20,7 @@ func (g *game) questTeleport(ctx context.Context, body []byte) error {
 	if g.channel != 19 || g.opening != nil || g.ordinary.Active() {
 		return reject()
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	var repeated bool
 	out, err := g.server.DB.ChangeTownQuest(ctx, g.lease, cat.Weights, func(c storage.Character, in storage.Inventory, _ map[string]json.RawMessage) (storage.TownQuestMutation, error) {

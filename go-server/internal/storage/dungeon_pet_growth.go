@@ -17,9 +17,10 @@ const petGrowthPolicy = "90CN-room-clear-1-v1"
 type PetGrowthRule struct {
 	Pet struct {
 		PetCareRule
-		SpeciesID                                   uint32
+		SpeciesID                                   uint32 `json:"SpeciesId"`
 		SpeciesHash                                 string
 		StartLevel, PermissionLevel, OverskillLevel byte
+		AutomaticFeedThreshold                      byte
 	}
 	Thresholds []uint32
 	TableHash  string

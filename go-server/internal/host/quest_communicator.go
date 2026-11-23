@@ -29,7 +29,7 @@ func (g *game) questCommunicator(ctx context.Context, body []byte) error {
 	if g.channel != 19 || g.opening != nil || g.ordinary.Active() {
 		return ack(false)
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	var next questwire.CommunicatorReplay
 	out, err := g.server.DB.ChangeTownQuest(ctx, g.lease, cat.Weights, func(c storage.Character, in storage.Inventory, rs map[string]json.RawMessage) (storage.TownQuestMutation, error) {

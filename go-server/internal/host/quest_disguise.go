@@ -34,7 +34,7 @@ func (g *game) disguiseUse(ctx context.Context, body []byte) error {
 	if g.channel != 19 || g.opening != nil || g.ordinary.Active() || g.ordinary.Returning() {
 		return reject()
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	var next questwire.DisguiseState
 	var replay bool
@@ -68,7 +68,7 @@ func (g *game) disguiseUse(ctx context.Context, body []byte) error {
 }
 
 func (g *game) disguiseRequest(ctx context.Context, f protocol.Frame) error {
-	cat := g.server.Characters
+	cat := g.catalog()
 	if f.Opcode == 212 {
 		if len(f.Body) != 0 {
 			return storage.ErrInvalid

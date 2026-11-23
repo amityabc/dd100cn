@@ -79,7 +79,8 @@ func (s *Server) operatorCommand(ctx context.Context, i operator.Intent) operato
 	}
 	var result operator.Reply
 	if m, ok := i.Command.(operator.Wisdom); ok {
-		result, err = s.DB.OperatorWisdom(work, g.lease, m, s.Characters.Commerce.Templates[storage.WisdomStone], ready, build)
+		catalog := s.itemsCatalog.Load()
+		result, err = s.DB.OperatorWisdom(work, g.lease, m, catalog.Commerce.Templates[storage.WisdomStone], ready, build)
 	} else {
 		result, err = s.DB.OperatorWallet(work, g.lease, i, ready, build)
 	}

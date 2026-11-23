@@ -17,6 +17,19 @@ type teleportDefinition struct {
 	DestinationHash      string
 }
 
+func (d teleportDefinition) MarshalJSON() ([]byte, error) {
+	points := make([]questPoint, 0, len(d.Destinations))
+	for _, position := range d.Destinations {
+		points = append(points, questPosition(position))
+	}
+	return json.Marshal(struct {
+		Item                 json.RawMessage
+		CooldownMilliseconds uint32
+		Destinations         []questPoint
+		DestinationHash      string
+	}{d.Item, d.CooldownMilliseconds, points, d.DestinationHash})
+}
+
 type TeleportRequest struct {
 	Sequence, Slot uint16
 	TemplateID     uint32

@@ -18,7 +18,7 @@ func RubyBoxGrants(c Character, in Inventory, templates map[uint32]json.RawMessa
 		}
 		counts[id]++
 	}
-	attr, err := json.Marshal(ordinaryMailAttributes{})
+	attr, err := InitialItemAttributes(0, 0)
 	if err != nil {
 		return in, err
 	}
@@ -88,7 +88,7 @@ func ActivityCollection(in Inventory, slot uint16, raw json.RawMessage) (Invento
 	if err != nil {
 		return in, err
 	}
-	attr, err := json.Marshal(ordinaryMailAttributes{})
+	attr, err := InitialItemAttributes(0, 0)
 	if err != nil {
 		return in, err
 	}

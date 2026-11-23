@@ -9,7 +9,7 @@ import (
 
 func (g *game) showPurchasedCodes(history map[uint32]storage.CommercePurchase) error {
 	var ids []uint32
-	for _, id := range g.server.Characters.Commerce.PurchaseCodes {
+	for _, id := range g.catalog().Commerce.PurchaseCodes {
 		if history[id].Count != 0 && !g.commerceOwnedCodes[id] {
 			ids = append(ids, id)
 		}

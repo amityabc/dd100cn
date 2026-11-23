@@ -10,6 +10,7 @@ const luckyScale = uint64(100000)
 
 type LuckyBoxRule struct {
 	Source                                    json.RawMessage
+	ConfigurationHash                         string
 	Types                                     []LuckyWeight
 	Grades                                    map[byte][]LuckyWeight
 	Rewards                                   map[byte][]LuckyReward

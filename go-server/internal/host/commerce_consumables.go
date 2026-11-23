@@ -47,7 +47,7 @@ func (g *game) usePotion(ctx context.Context, body []byte) error {
 	if g.hasQuestExperience(item) {
 		return g.questExperienceItem(ctx, body)
 	}
-	registry := g.server.Characters.Commerce.Potions
+	registry := g.catalog().Commerce.Potions
 	rule, ok := registry[item]
 	if !ok {
 		return reject()
@@ -129,7 +129,7 @@ func (g *game) useConsumable(ctx context.Context, body []byte) error {
 	default:
 		return reject()
 	}
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	out, err := g.server.DB.Commerce(ctx, g.lease, 507, g.seq, body, g.commerceState, func(x *storage.CommerceTx) error {
 		place, err := catalog.ConsumableTown(x.Character)
 		if err != nil {

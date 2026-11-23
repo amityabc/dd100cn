@@ -20,7 +20,7 @@ func (g *game) useContainerCoupon(ctx context.Context, op uint16, b []byte) erro
 		return storage.ErrInvalid
 	}
 	cargo := op == 400
-	catalog := g.server.Characters
+	catalog := g.catalog()
 	reject := func() error {
 		if cargo {
 			return g.send(1, 400, mailwire.Rejected(0))
@@ -91,7 +91,7 @@ func (g *game) unsealEquipment(ctx context.Context, b []byte) error {
 		return reject()
 	}
 	slot := binary.LittleEndian.Uint16(b)
-	catalog := g.server.Characters.Commerce.MagicSeal
+	catalog := g.catalog().Commerce.MagicSeal
 	out, err := g.server.DB.Commerce(ctx, g.lease, 393, g.seq, b, g.commerceState, func(x *storage.CommerceTx) error {
 		return x.UnsealEquipment(slot, catalog)
 	})

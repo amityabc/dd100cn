@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"s9a1/server/internal/catalogprep/gm"
 	"s9a1/server/internal/config"
 	"s9a1/server/internal/resources"
 	"s9a1/server/internal/storage"
@@ -60,7 +61,13 @@ func gmIndex(args []string) error {
 	if err != nil {
 		return err
 	}
+	if !source.Mode().IsRegular() {
+		return errors.New("Script.pvf must be a regular file")
+	}
 	root := values["--server-root"]
+	if strings.TrimSpace(root) == "" {
+		root = ""
+	}
 	var cfg config.Config
 	var legacyDatabase string
 	if root != "" {
@@ -89,8 +96,20 @@ func gmIndex(args []string) error {
 			break
 		}
 	}
+	imageRoot := filepath.Join(client, "ImagePacks2")
+	imageDir, err := os.Stat(imageRoot)
+	if err != nil {
+		return err
+	}
+	if !imageDir.IsDir() {
+		return errors.New("ImagePacks2 must be a directory")
+	}
+	imageRoot, err = filepath.EvalSymlinks(imageRoot)
+	if err != nil {
+		return err
+	}
 	var images indexCounts
-	err = filepath.WalkDir(filepath.Join(client, "ImagePacks2"), func(path string, entry fs.DirEntry, err error) error {
+	err = filepath.WalkDir(imageRoot, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil || entry.IsDir() {
 			return err
 		}
@@ -109,9 +128,14 @@ func gmIndex(args []string) error {
 		return err
 	}
 	pack := gmIndexPackPath(runtimeCatalogPath(cfg, true))
-	index, err := resources.LoadGMIndex(pack, pvf, profile, filepath.Join(filepath.Dir(output), "item-index.json"))
+	cache := filepath.Join(filepath.Dir(output), "item-index.json")
+	index, err := resources.LoadGMIndex(pack, pvf, profile, cache)
 	if err != nil {
-		return err
+		var nativeErr error
+		index, nativeErr = readNativeGMDisplay(pvf, profile, cache)
+		if nativeErr != nil {
+			return errors.Join(err, nativeErr)
+		}
 	}
 	database := struct {
 		indexCounts
@@ -163,6 +187,23 @@ func gmIndex(args []string) error {
 		return err
 	}
 	return json.NewEncoder(os.Stdout).Encode(map[string]any{"version": version, "clientPath": client, "items": len(index.Rows), "ready": true})
+}
+
+func readNativeGMDisplay(source, profile, cache string) (resources.GmIndex, error) {
+	sourceHash, _, err := fileFingerprint(source)
+	if err != nil {
+		return resources.GmIndex{}, err
+	}
+	var profileHash string
+	if profile != "" {
+		profileHash, _, err = fileFingerprint(profile)
+		if err != nil {
+			return resources.GmIndex{}, err
+		}
+	}
+	return resources.LoadGMDisplayCache(cache, sourceHash, profileHash, gm.DisplayParserVersion, func() ([]resources.GmCatalogItem, error) {
+		return gm.BuildDisplay(context.Background(), source, profile)
+	})
 }
 
 func gmIndexDatabasePath(c config.Config) (string, error) {

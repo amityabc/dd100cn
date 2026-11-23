@@ -26,7 +26,7 @@ func (g *game) questAvatarEdit(ctx context.Context, op uint16, body []byte) erro
 	if !g.commerceInTown() {
 		return g.send(1, op, rejected)
 	}
-	cat := g.server.Characters.Quests
+	cat := g.catalog().Quests
 	now := time.Now()
 	var result []byte
 	out, err := g.server.DB.Commerce(ctx, g.lease, op, g.seq, body, g.questEmblems[op], func(x *storage.CommerceTx) error {
@@ -83,7 +83,7 @@ func (g *game) avatarDisassembly(ctx context.Context, body []byte) error {
 	if !g.commerceInTown() {
 		return g.send(1, op, rejected)
 	}
-	cat := g.server.Characters.Quests.AvatarEdits().Disassembly
+	cat := g.catalog().Quests.AvatarEdits().Disassembly
 	now := time.Now()
 	var before storage.Inventory
 	out, err := g.server.DB.Commerce(ctx, g.lease, op, g.seq, body, g.questEmblems[op], func(x *storage.CommerceTx) error {

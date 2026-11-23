@@ -26,7 +26,7 @@ func (g *game) questEmblem(ctx context.Context, op uint16, body []byte) error {
 	var remaining []storage.EmblemRemaining
 	out, err := g.server.DB.Commerce(ctx, g.lease, op, g.seq, body[:n], g.questEmblems[op], func(x *storage.CommerceTx) error {
 		var err error
-		remaining, err = x.ApplyEmblem(req, g.server.Characters.Quests.Emblems(), now)
+		remaining, err = x.ApplyEmblem(req, g.catalog().Quests.Emblems(), now)
 		return err
 	})
 	if expectedCommerceError(err) {
@@ -93,7 +93,7 @@ func (g *game) emblemCompound(ctx context.Context, body []byte) error {
 	if !g.commerceInTown() {
 		return g.send(1, op, rejected)
 	}
-	cat := g.server.Characters.Quests.Emblems().Compound
+	cat := g.catalog().Quests.Emblems().Compound
 	now := time.Now()
 	var rewards []storage.GiftReward
 	var before storage.Inventory

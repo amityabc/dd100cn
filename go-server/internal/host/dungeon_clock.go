@@ -9,8 +9,8 @@ import (
 )
 
 func (g *game) trackDungeonLuck() {
-	if g.server.delegated && g.dungeonLuckAt.IsZero() && g.server.Characters.Dungeons != nil &&
-		g.server.Characters.Dungeons.Luck.PlayIntervalMinutes > 0 {
+	if g.server.delegated && g.dungeonLuckAt.IsZero() && g.catalog().Dungeons != nil &&
+		g.catalog().Dungeons.Luck.PlayIntervalMinutes > 0 {
 		g.dungeonLuckAt = time.Now().Add(time.Minute)
 	}
 }
@@ -45,7 +45,7 @@ func (g *game) dungeonTick(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			luck := g.server.Characters.Dungeons.Luck
+			luck := g.catalog().Dungeons.Luck
 			if err := g.server.DB.AccrueDungeonPlayMinute(ctx, g.lease, character, luck.PlayIntervalMinutes, luck.PointsPerPlayInterval); err != nil {
 				return err
 			}

@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"s9a1/server/internal/storage"
 	"strings"
+
+	"github.com/google/uuid"
+	"s9a1/server/internal/storage"
 )
 
 func releaseSeed(args []string) error {
@@ -24,7 +26,16 @@ func releaseSeed(args []string) error {
 		return err
 	}
 	dest := filepath.Join(dir, "release-seed.sql")
-	data := storage.ReleaseSeedSQL()
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	digest, _, err := fileFingerprint(exe)
+	if err != nil {
+		return err
+	}
+	buildID := uuid.NewSHA1(uuid.NameSpaceOID, []byte("sha256:"+strings.ToLower(digest)))
+	data := storage.ReleaseSeedSQL(buildID)
 	f, err := os.CreateTemp(dir, ".release-seed-*.sql")
 	if err != nil {
 		return err

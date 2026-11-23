@@ -8,7 +8,7 @@ import (
 )
 
 type RepairDefinition struct {
-	TemplateID         uint32
+	TemplateID         uint32 `json:"TemplateId"`
 	ResourceHash       string
 	Grade, RepairPrice int
 	MaximumDurability  uint16

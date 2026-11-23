@@ -1,8 +1,12 @@
 package dungeon
 
 import (
+	"encoding/hex"
+	"errors"
 	"math"
 	"slices"
+
+	"s9a1/server/internal/opening"
 )
 
 type GameMasterAPC struct {
@@ -54,14 +58,29 @@ func (r *Run) GameMasterDefeated(actor uint16) bool {
 	return dead
 }
 
-func (r *Run) AddGameMasterAPC(actor uint16, code uint32, level, faction byte, hash string) (GameMasterAPC, bool) {
-	if !r.GameMasterReady() || r.InLayer || len(r.GmApcs) >= 32 || actor < 402 || actor >= math.MaxUint16-1 ||
-		code == 0 || level < 1 || level > 100 || faction > 2 || len(hash) != 64 {
-		return GameMasterAPC{}, false
+func (r *Run) AddGameMasterAPC(first uint16, code uint32, level, faction byte, hash string) (GameMasterAPC, uint16, error) {
+	if !r.GameMasterReady() || r.InLayer {
+		return GameMasterAPC{}, first, errors.New("请在副本房间加载完成且角色存活时使用此命令")
+	}
+	if _, err := hex.DecodeString(hash); code == 0 || code > 80000 || faction > 2 || len(hash) != 64 || err != nil {
+		return GameMasterAPC{}, first, errors.New("APC编号不存在或资源未准备完成")
+	}
+	if len(r.GmApcs) >= 32 {
+		return GameMasterAPC{}, first, errors.New("本次副本已达到32个GM召唤上限，请重新进入副本")
+	}
+	if level < 1 || level > 100 {
+		return GameMasterAPC{}, first, errors.New("APC等级必须为1至100，或-1跟随角色")
+	}
+	if first == 0 {
+		return GameMasterAPC{}, first, errors.New("副本对象编号空间尚未初始化")
+	}
+	actor, next, err := (opening.Definition{Dungeon: r.Definition.Dungeon.Dungeon}).ReserveDynamic(first, 1)
+	if err != nil {
+		return GameMasterAPC{}, first, err
 	}
 	a := GameMasterAPC{actor, code, level, faction, r.Room.X, r.Room.Y, r.Room.MapID, hash}
 	r.GmApcs = append(r.GmApcs, a)
-	return a, true
+	return a, next, nil
 }
 
 func (r *Run) GameMasterFollowers() []GameMasterAPC {

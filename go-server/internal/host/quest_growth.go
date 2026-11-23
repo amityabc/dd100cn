@@ -15,7 +15,7 @@ import (
 )
 
 func (g *game) hasQuestExperience(id uint32) bool {
-	return g.server.Characters.Quests.HasExperience(id)
+	return g.catalog().Quests.HasExperience(id)
 }
 
 func (g *game) questExperienceBook(ctx context.Context, body []byte) error {
@@ -49,7 +49,7 @@ func (g *game) useQuestGrowth(ctx context.Context, op uint16, b []byte) error {
 	if g.channel != 19 || g.ordinary.Returning() {
 		return reject()
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	var action questwire.GrowthResult
 	inDungeon := g.opening != nil || g.ordinary.Active()
@@ -149,7 +149,7 @@ func (g *game) publishTownGrowth(out storage.TownQuestResult, now time.Time) err
 	if err = g.sendQuestBookOrdered(out, true); err != nil {
 		return err
 	}
-	assets, _, err := inventorywire.Town(out.Inventory, c, inventorywire.Options{CashPolicies: g.server.Characters.CashPolicies, Now: now})
+	assets, _, err := inventorywire.Town(out.Inventory, c, inventorywire.Options{CashPolicies: g.catalog().CashPolicies, Now: now})
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (g *game) questCapsule(ctx context.Context, body []byte) error {
 	if g.channel != 19 || g.opening != nil || g.ordinary.Active() || g.ordinary.Returning() {
 		return reject()
 	}
-	cat := g.server.Characters
+	cat := g.catalog()
 	now := time.Now()
 	var action questwire.GrowthResult
 	out, err := g.server.DB.ChangeTownQuest(ctx, g.lease, cat.Weights, func(c storage.Character, in storage.Inventory, _ map[string]json.RawMessage) (storage.TownQuestMutation, error) {

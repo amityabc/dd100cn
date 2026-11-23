@@ -20,11 +20,26 @@ type AvatarCashOffer struct {
 type CashNameTag struct {
 	Commodity, Cera, Days uint32
 	Template              struct {
-		TemplateID   uint32
-		ResourceHash string
-		MinimumLevel byte
-		UsableJobs   uint16
+		TemplateID         uint32 `json:"TemplateId"`
+		ResourceHash       string
+		MinimumLevel       byte
+		UsableJobs         uint16
+		Visual             *NameTagVisual  `json:",omitempty"`
+		Effects            *NameTagEffects `json:",omitempty"`
+		UnavailableModules []string        `json:",omitempty"`
 	}
+}
+
+type NameTagVisual struct {
+	Image                   string
+	ImageIndices, Offset    [3]int
+	BarHeightRate, BarAlpha int
+	BarOffset               [3]int
+}
+
+type NameTagEffects struct {
+	PhysicalAttack, PhysicalDefense, MagicalAttack, MagicalDefense int
+	AttackSpeed, CastSpeed, MoveSpeed                              int
 }
 
 type specialPurchaseTemplate struct {

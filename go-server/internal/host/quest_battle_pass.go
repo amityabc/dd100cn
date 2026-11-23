@@ -15,7 +15,7 @@ import (
 )
 
 func (g *game) refreshBattlePass(ctx context.Context, login bool) error {
-	p := g.server.Characters.Quests.BattlePass
+	p := g.catalog().Quests.BattlePass
 	now := time.Now()
 	if !p.Active(now) {
 		return nil
@@ -31,7 +31,7 @@ func (g *game) battlePassPackets(ctx context.Context, force bool) ([]opening.Pac
 	if !force && bytes.Equal(raw, g.battlePassStamp) {
 		return nil, nil
 	}
-	projected, err := g.server.Characters.Quests.BattlePass.Projection(raw, g.battlePassStamp)
+	projected, err := g.catalog().Quests.BattlePass.Projection(raw, g.battlePassStamp)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (g *game) battlePassPackets(ctx context.Context, force bool) ([]opening.Pac
 }
 
 func (g *game) sendBattlePass(ctx context.Context, force bool) error {
-	if !g.battlePassSent || !force && !g.server.Characters.Quests.BattlePass.Active(time.Now()) {
+	if !g.battlePassSent || !force && !g.catalog().Quests.BattlePass.Active(time.Now()) {
 		return nil
 	}
 	packets, err := g.battlePassPackets(ctx, force)
@@ -69,7 +69,7 @@ func (g *game) battlePassRequest(ctx context.Context, f protocol.Frame) error {
 		return nil
 	}
 	now := time.Now()
-	cat := g.server.Characters
+	cat := g.catalog()
 	d := cat.Quests.BattlePass
 	var rejected error
 	var out storage.BattlePassResult
