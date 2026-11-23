@@ -224,6 +224,8 @@ type Run struct {
 
 func (r *Run) Ready() bool { return r.ready }
 
+func (r *Run) ReadyFor(character uint16) bool { return r.ready && r.character == character }
+
 func (r *Run) WearScene() (string, uint16, Room, bool) {
 	return r.runID, r.character, r.room, r.ready
 }

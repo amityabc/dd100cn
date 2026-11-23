@@ -110,7 +110,7 @@ func (g *game) dungeonRequest(ctx context.Context, f protocol.Frame) error {
 		}
 	}
 	if roster.Phase != storage.TownReady || g.channel != 19 && (g.channel != 63 || run == nil || run.OculusEntry == nil) ||
-		g.opening != nil || run != nil && run.Character != c.ID {
+		g.opening != nil && f.Opcode != 42 || run != nil && run.Character != c.ID {
 		return storage.ErrPhase
 	}
 	gate := catalog.Gate(c.Position.Town, c.Position.Area)
@@ -195,7 +195,9 @@ func (g *game) dungeonRequest(ctx context.Context, f protocol.Frame) error {
 			}
 			return g.parkOculus(ctx, run, c, nil)
 		}
-		if run != nil && (f.Opcode != 42 || !run.Ready) || run == nil && f.Opcode == 42 && !ss.Returning() {
+		if run != nil && (f.Opcode != 42 || !run.Ready) ||
+			g.opening != nil && !g.opening.ReadyFor(c.ID) ||
+			f.Opcode == 42 && run == nil && g.opening == nil && !ss.Returning() {
 			return storage.ErrPhase
 		}
 		if !ss.Returning() {
@@ -205,10 +207,11 @@ func (g *game) dungeonRequest(ctx context.Context, f protocol.Frame) error {
 				}
 				ss.BeginReturn()
 			} else {
-				if err := db.ReturnDungeon(ctx, g.lease, c, run != nil); err != nil {
+				if err := db.ReturnDungeon(ctx, g.lease, c, run != nil || g.opening != nil); err != nil {
 					return err
 				}
 				ss.BeginReturn()
+				g.opening = nil
 			}
 			g.rubyView = nil
 		}
@@ -640,7 +643,11 @@ func (g *game) dungeonTownMotion(ctx context.Context, body []byte) error {
 	if err != nil {
 		return err
 	}
-	mail, err := mailwire.Town(c)
+	mailbox, err := storage.ReadMailbox(c)
+	if err != nil {
+		return err
+	}
+	mail, err := mailwire.Pages(mailbox.Page())
 	if err != nil {
 		return err
 	}
