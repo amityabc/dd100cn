@@ -137,12 +137,19 @@ func TestOriginalHostChannelExchange(t *testing.T) {
 		t.Fatal(err)
 	}
 	script := bytes.TrimRight(padded, "\x00")
-	source, err := os.ReadFile(filepath.Join("..", "..", "..", "s9a1", "Server", "Data", "channel_info.etc"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	catalog, err := ParseChannelCatalog(source, true)
-	equalWire(t, "upstream original channel settings projected into S10", catalog.Script, err, script)
+	catalog, err := ParseChannelCatalog(script, true)
+	equalWire(t, "published S10 channel settings", catalog.Script, err, script)
+	t.Run("upstream source projection", func(t *testing.T) {
+		source, err := os.ReadFile(filepath.Join("..", "..", "..", "s9a1", "Server", "Data", "channel_info.etc"))
+		if errors.Is(err, os.ErrNotExist) {
+			t.Skip("requires channel_info.etc from the reference S9A1 checkout")
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		catalog, err := ParseChannelCatalog(source, true)
+		equalWire(t, "upstream original channel settings projected into S10", catalog.Script, err, script)
+	})
 	if len(v.Directory) != 4 || v.Directory[0].ID != 19 || v.Directory[0].Port != v.GamePort {
 		t.Fatal("incomplete captured directory")
 	}

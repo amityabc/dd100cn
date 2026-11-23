@@ -2,6 +2,8 @@
 
 从仓库根目录运行 `./go-server/tools/go.ps1 test ./internal/protocol ./internal/opening ./internal/duellobby`。平时的回归读取这些固定样本，只有重新采集才会启动原服。所有 TCP 请求均由本地脚本发出，原客户端界面和客户端操作时序还需实机验收。
 
+频道回归从已收录的原服 S10 回复读取频道脚本，检查脚本内容及整个频道交互的字节序列。本机另有上游 `s9a1/Server/Data/channel_info.etc` 时，还会核对从原始配置生成 S10 的结果。独立克隆只需仓库中的录包即可执行整段交互回归。
+
 | 文件 | 来源 | 校验内容 |
 | --- | --- | --- |
 | `public-frames.json` | 上游 `Server/tests/Serve100.Tests/Fixtures/PublicSamples.json` 中的 55 个合成帧 | 按方向解析并重建完整帧，包括 11/13/16 字节头、CRC、marker16、序号和原始负载。上游文件 SHA-256 为 `859688EE721746F6ED0DD4DE7F535225B07E03ADD653F5037C7A395239B44E4D`。 |
